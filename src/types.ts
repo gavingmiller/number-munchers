@@ -36,7 +36,8 @@ export interface TroggleData {
   moveTimer: number;    // ticks until next move
   moveInterval: number; // ticks between moves
   direction: Direction; // current facing (for Reggie/Worker)
-  playerMovesUntilEntry: number; // -1 = already active; >=0 = moves remaining before entering
+  playerMovesUntilEntry: number; // -1 = already active; >=0 = absolute move count to activate
+  ticksUntilEntry: number;       // -1 = don't use tick-based entry; >=0 = absolute tick count to activate
 }
 
 export interface ScoreData {

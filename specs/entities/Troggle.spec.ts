@@ -32,6 +32,16 @@ describe('createTroggle', () => {
     expect(t.row).toBe(-1);
     expect(t.col).toBe(-1);
   });
+
+  it('defaults ticksUntilEntry to -1', () => {
+    const t = createTroggle('t1', 'reggie', 0, 0, 30);
+    expect(t.ticksUntilEntry).toBe(-1);
+  });
+
+  it('accepts explicit ticksUntilEntry', () => {
+    const t = createTroggle('t1', 'reggie', -1, -1, 30, 7, 100);
+    expect(t.ticksUntilEntry).toBe(100);
+  });
 });
 
 describe('tickTroggle', () => {

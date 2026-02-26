@@ -150,6 +150,43 @@ describe('applyTroggleHit', () => {
     const hit = applyTroggleHit(state);
     expect(hit.status).toBe('life-lost');
   });
+
+  it('resets player to center (2,2) after hit', () => {
+    const state = createLevelState('multiples', 1);
+    const withMovedPlayer = { ...state, player: { ...state.player, row: 5, col: 4 } };
+    const hit = applyTroggleHit(withMovedPlayer);
+    expect(hit.player.row).toBe(2);
+    expect(hit.player.col).toBe(2);
+  });
+
+  it('deactivates all troggles to off-screen after hit', () => {
+    const state = createLevelState('multiples', 4); // level 4 = 2 troggles
+    // Manually activate one troggle
+    const withActiveTroggle = {
+      ...state,
+      troggles: [
+        { ...state.troggles[0], row: 2, col: 2, playerMovesUntilEntry: -1 },
+        { ...state.troggles[1], row: 0, col: 0, playerMovesUntilEntry: -1 },
+      ],
+    };
+    const hit = applyTroggleHit(withActiveTroggle);
+    expect(hit.troggles.every((t) => t.row === -1)).toBe(true);
+    expect(hit.troggles.every((t) => t.col === -1)).toBe(true);
+  });
+
+  it('preserves troggle count after hit (no permanent deletion)', () => {
+    const state = createLevelState('multiples', 4);
+    const hit = applyTroggleHit(state);
+    expect(hit.troggles).toHaveLength(state.troggles.length);
+  });
+
+  it('re-arms troggle entry timers relative to current tickCount', () => {
+    const state = createLevelState('multiples', 1);
+    const withTicks = { ...state, tickCount: 500 };
+    const hit = applyTroggleHit(withTicks);
+    // ticksUntilEntry must be > current tickCount (re-armed for future)
+    expect(hit.troggles[0].ticksUntilEntry).toBeGreaterThan(500);
+  });
 });
 
 describe('applyTroggleTick', () => {
@@ -177,5 +214,21 @@ describe('applyTroggleTick', () => {
     // Troggles start at row=-1 (inactive)
     const ticked = applyTroggleTick(state);
     expect(ticked.troggles[0].moveTimer).toBe(state.troggles[0].moveTimer);
+  });
+
+  it('activates inactive troggle when tickCount reaches ticksUntilEntry', () => {
+    const state = createLevelState('multiples', 1);
+    // Force threshold to 5 ticks for deterministic test
+    const withLowThreshold = {
+      ...state,
+      troggles: [{ ...state.troggles[0], ticksUntilEntry: 5 }],
+    };
+    // Tick 5 times — on tick 5, tickCount reaches 5, troggle should activate
+    let s = withLowThreshold;
+    for (let i = 0; i < 5; i++) {
+      s = applyTroggleTick(s);
+    }
+    expect(s.troggles[0].row).not.toBe(-1);
+    expect(s.troggles[0].ticksUntilEntry).toBe(-1);
   });
 });

@@ -7,6 +7,7 @@ export function createTroggle(
   col: number,
   moveInterval: number,
   playerMovesUntilEntry = -1,
+  ticksUntilEntry = -1,
 ): TroggleData {
   return {
     id,
@@ -17,6 +18,7 @@ export function createTroggle(
     moveInterval,
     direction: 'right',
     playerMovesUntilEntry,
+    ticksUntilEntry,
   };
 }
 

@@ -67,6 +67,7 @@ describe('checkPlayerTroggles', () => {
           moveInterval: 10,
           direction: 'right',
           playerMovesUntilEntry: -1,
+          ticksUntilEntry: -1,
         },
       ],
     });
@@ -89,6 +90,7 @@ describe('checkPlayerTroggles', () => {
           moveInterval: 10,
           direction: 'right',
           playerMovesUntilEntry: -1,
+          ticksUntilEntry: -1,
         },
       ],
     });
@@ -108,6 +110,7 @@ describe('checkPlayerTroggles', () => {
           moveInterval: 10,
           direction: 'right',
           playerMovesUntilEntry: 5,
+          ticksUntilEntry: 100,
         },
       ],
     });

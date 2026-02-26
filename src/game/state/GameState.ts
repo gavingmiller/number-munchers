@@ -39,7 +39,7 @@ const EDGE_POSITIONS: Array<{ row: number; col: number }> = [
 
 function activateTroggle(t: TroggleData): TroggleData {
   const pos = EDGE_POSITIONS[Math.floor(Math.random() * EDGE_POSITIONS.length)];
-  return { ...t, row: pos.row, col: pos.col, playerMovesUntilEntry: -1 };
+  return { ...t, row: pos.row, col: pos.col, playerMovesUntilEntry: -1, ticksUntilEntry: -1 };
 }
 
 export function createLevelState(
@@ -66,7 +66,8 @@ export function createLevelState(
         -1, // off-screen until activated
         -1,
         config.troggleMoveInterval,
-        randomInt(5 + i * 5, 10 + i * 5), // staggered: troggle 0→5-10, 1→10-15, etc.
+        randomInt(5 + i * 5, 10 + i * 5),       // move-based: 5-10, 10-15, …
+        randomInt(80 + i * 40, 120 + i * 40),    // tick-based: ~8-12s, 12-16s, … at 100ms/tick
       ),
     );
   }
@@ -147,11 +148,34 @@ export function applyMunch(state: GameState): GameState {
 export function applyTroggleHit(state: GameState): GameState {
   const newLives = state.lives - 1;
   const newStatus = newLives <= 0 ? 'game-over' : 'life-lost';
-  return { ...state, lives: newLives, status: newStatus };
+
+  // Reset player to center
+  const player = { ...state.player, row: 2, col: 2 };
+
+  // Send all troggles back off-screen with fresh re-armed entry timers
+  const troggles = state.troggles.map((t, i) => ({
+    ...t,
+    row: -1,
+    col: -1,
+    playerMovesUntilEntry: state.playerMoveCount + randomInt(5 + i * 5, 10 + i * 5),
+    ticksUntilEntry: state.tickCount + randomInt(80 + i * 40, 120 + i * 40),
+  }));
+
+  return { ...state, lives: newLives, status: newStatus, player, troggles };
 }
 
 export function applyTroggleTick(state: GameState): GameState {
+  const nextTickCount = state.tickCount + 1;
+
+  // Activate any inactive troggle whose tick threshold has been reached
   let troggles = state.troggles.map((t) => {
+    if (t.row === -1 && t.ticksUntilEntry >= 0 && nextTickCount >= t.ticksUntilEntry) {
+      return activateTroggle(t);
+    }
+    return t;
+  });
+
+  troggles = troggles.map((t) => {
     if (t.row === -1) return t; // skip inactive troggles
     return tickTroggle(t);
   });
@@ -184,5 +208,5 @@ export function applyTroggleTick(state: GameState): GameState {
     return t;
   });
 
-  return { ...state, troggles, tickCount: state.tickCount + 1 };
+  return { ...state, troggles, tickCount: nextTickCount };
 }
