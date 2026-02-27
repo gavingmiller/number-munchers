@@ -8,8 +8,8 @@ import { RuleBanner } from '../ui/RuleBanner';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { CANVAS_WIDTH, GRID_Y, GRID_H, TROGGLE_COLORS } from '../constants';
 
-// 2× speed vs production (production = 100ms)
-const DEBUG_TICK_MS = 50;
+// Match production speed (100ms per tick)
+const DEBUG_TICK_MS = 100;
 
 interface TroggleSpec {
   type: TroggleType;
