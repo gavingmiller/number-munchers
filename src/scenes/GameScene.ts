@@ -6,6 +6,7 @@ import { GridRenderer } from '../ui/GridRenderer';
 import { HUD } from '../ui/HUD';
 import { DPad } from '../ui/DPad';
 import { RuleBanner } from '../ui/RuleBanner';
+import { DebugOverlay } from '../ui/DebugOverlay';
 import {
   PLAYER_MOVE_MS,
   FLASH_CORRECT_MS,
@@ -26,6 +27,7 @@ export class GameScene extends Phaser.Scene {
   private hud!: HUD;
   private dpad!: DPad;
   private ruleBanner!: RuleBanner;
+  private debugOverlay!: DebugOverlay;
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private spaceKey?: Phaser.Input.Keyboard.Key;
   private moveTimer = 0;
@@ -60,6 +62,9 @@ export class GameScene extends Phaser.Scene {
 
     this.gridRenderer = new GridRenderer(this);
     this.gridRenderer.create(this.state);
+
+    this.debugOverlay = new DebugOverlay(this);
+    this.debugOverlay.create(this.state);
 
     this.dpad = new DPad(this, (dir: Direction) => {
       this.handleMove(dir);
@@ -117,6 +122,7 @@ export class GameScene extends Phaser.Scene {
       }
 
       this.gridRenderer.update(this.state);
+      this.debugOverlay.update(this.state);
     }
   }
 
@@ -134,6 +140,7 @@ export class GameScene extends Phaser.Scene {
     this.state = applyMove(this.state, dir);
     this.gridRenderer.update(this.state);
     this.hud.update(this.state);
+    this.debugOverlay.update(this.state);
 
     // Check troggle collision after moving
     const troggleResult = checkPlayerTroggles(this.state);
