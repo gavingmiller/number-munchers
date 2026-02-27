@@ -75,6 +75,20 @@ export class MainMenuScene extends Phaser.Scene {
       });
     }
 
+    // Debug button
+    const debugY = startY + MODES.length * gap + 20;
+    const debugBg = this.add.rectangle(centerX, debugY, btnW, btnH * 0.75, 0x1a1a1a)
+      .setStrokeStyle(1, 0x555555)
+      .setInteractive({ useHandCursor: true });
+    const debugLabel = this.add.text(centerX, debugY, 'Debug Mode', {
+      fontSize: '20px',
+      fontFamily: 'Arial',
+      color: '#555555',
+    }).setOrigin(0.5);
+    debugBg.on('pointerover', () => { debugBg.setStrokeStyle(1, 0xff4444); debugLabel.setColor('#ff4444'); });
+    debugBg.on('pointerout',  () => { debugBg.setStrokeStyle(1, 0x555555); debugLabel.setColor('#555555'); });
+    debugBg.on('pointerdown', () => { this.scene.start('Debug'); });
+
     // Footer
     this.add.text(centerX, CANVAS_HEIGHT - 60, 'Tap a mode to begin', {
       fontSize: '18px',

@@ -34,6 +34,25 @@ describe('createLevelState', () => {
     expect(state.playerMoveCount).toBe(0);
   });
 
+  it('worker troggle has ticksUntilEntry of 1000', () => {
+    // Level 5 includes a worker (index 4 → type worker)
+    const state = createLevelState('multiples', 10); // enough troggles to get a worker
+    const worker = state.troggles.find((t) => t.type === 'worker');
+    if (worker) {
+      expect(worker.ticksUntilEntry).toBe(1000);
+      expect(worker.playerMovesUntilEntry).toBe(9999);
+    }
+  });
+
+  it('worker move interval is 50% of non-worker interval', () => {
+    const state = createLevelState('multiples', 10);
+    const worker = state.troggles.find((t) => t.type === 'worker');
+    const other  = state.troggles.find((t) => t.type !== 'worker');
+    if (worker && other) {
+      expect(worker.moveInterval).toBe(Math.max(1, Math.floor(other.moveInterval * 0.5)));
+    }
+  });
+
   it('level 4 has 2 troggles', () => {
     const state = createLevelState('multiples', 4);
     expect(state.troggles).toHaveLength(2);

@@ -57,4 +57,18 @@ describe('nextMove', () => {
     const dir = nextMove(troggle, player, emptyGrid);
     expect(dir).toBe('left');
   });
+
+  it('worker moves toward adjacent cell closest to player', () => {
+    // Player at (3,3), worker at (0,0) — right and down both reduce distance equally
+    const troggle = createTroggle('t1', 'worker', 0, 0, 5);
+    const dir = nextMove(troggle, player, emptyGrid);
+    expect(['right', 'down']).toContain(dir);
+  });
+
+  it('worker picks single best direction when unambiguous', () => {
+    // Worker directly left of player on same row — only 'right' closes distance
+    const troggle = createTroggle('t1', 'worker', 3, 1, 5); // player at (3,3)
+    const dir = nextMove(troggle, player, emptyGrid);
+    expect(dir).toBe('right');
+  });
 });

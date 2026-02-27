@@ -37,9 +37,31 @@ const EDGE_POSITIONS: Array<{ row: number; col: number }> = [
   ...Array.from({ length: ROWS }, (_, r) => ({ row: r, col: COLS - 1 })),
 ];
 
+/** Pick a traversal direction for Reggie based on which edge it entered from. */
+function reggieEntryDirection(row: number, col: number): Direction {
+  const onTopBottom = row === 0 || row === ROWS - 1;
+  const onLeftRight = col === 0 || col === COLS - 1;
+
+  if (onTopBottom && !onLeftRight) {
+    // Pure top/bottom edge: traverse the row
+    return Math.random() < 0.5 ? 'right' : 'left';
+  }
+  if (onLeftRight && !onTopBottom) {
+    // Pure left/right edge: traverse the column
+    return Math.random() < 0.5 ? 'up' : 'down';
+  }
+  // Corner: randomly pick row-traversal or column-traversal
+  return Math.random() < 0.5
+    ? (Math.random() < 0.5 ? 'right' : 'left')
+    : (Math.random() < 0.5 ? 'up' : 'down');
+}
+
 function activateTroggle(t: TroggleData): TroggleData {
   const pos = EDGE_POSITIONS[Math.floor(Math.random() * EDGE_POSITIONS.length)];
-  return { ...t, row: pos.row, col: pos.col, playerMovesUntilEntry: -1, ticksUntilEntry: -1 };
+  const direction = t.type === 'reggie'
+    ? reggieEntryDirection(pos.row, pos.col)
+    : t.direction;
+  return { ...t, row: pos.row, col: pos.col, direction, playerMovesUntilEntry: -1, ticksUntilEntry: -1 };
 }
 
 /** True when Reggie's current direction points off the grid boundary. */
@@ -85,15 +107,23 @@ export function createLevelState(
   const troggles = [];
   for (let i = 0; i < config.troggleCount; i++) {
     const type = TROGGLE_TYPES[i % TROGGLE_TYPES.length];
+    const isWorker = type === 'worker';
+    // Worker: 50% faster, enters only after 1000 ticks (never via move count)
+    const moveInterval = isWorker
+      ? Math.max(1, Math.floor(config.troggleMoveInterval * 0.5))
+      : config.troggleMoveInterval;
+    const movesEntry = isWorker ? 9999 : randomInt(5 + i * 5, 10 + i * 5);
+    const tickEntry  = isWorker ? 1000 : randomInt(80 + i * 40, 120 + i * 40);
+
     troggles.push(
       createTroggle(
         `troggle-${i}`,
         type,
-        -1, // off-screen until activated
         -1,
-        config.troggleMoveInterval,
-        randomInt(5 + i * 5, 10 + i * 5),       // move-based: 5-10, 10-15, …
-        randomInt(80 + i * 40, 120 + i * 40),    // tick-based: ~8-12s, 12-16s, … at 100ms/tick
+        -1,
+        moveInterval,
+        movesEntry,
+        tickEntry,
       ),
     );
   }

@@ -102,7 +102,23 @@ export function nextMove(
     }
 
     case 'helper':
-    case 'worker':
       return randomDirection(valid);
+
+    case 'worker': {
+      // Move toward the adjacent cell with minimum Manhattan distance to player
+      let bestDir = valid[0];
+      let bestDist = Infinity;
+      for (const dir of valid) {
+        let r = troggle.row;
+        let c = troggle.col;
+        if (dir === 'up') r--;
+        else if (dir === 'down') r++;
+        else if (dir === 'left') c--;
+        else c++;
+        const d = distanceBetween(r, c, player.row, player.col);
+        if (d < bestDist) { bestDist = d; bestDir = dir; }
+      }
+      return bestDir;
+    }
   }
 }
