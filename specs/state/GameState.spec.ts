@@ -216,6 +216,70 @@ describe('applyTroggleTick', () => {
     expect(ticked.troggles[0].moveTimer).toBe(state.troggles[0].moveTimer);
   });
 
+  it('deactivates reggie when it reaches edge in its current direction', () => {
+    const state = createLevelState('multiples', 1);
+    // Place Reggie at top row facing up — next tick it should exit
+    const withReggieAtEdge = {
+      ...state,
+      troggles: [{
+        ...state.troggles[0],
+        type: 'reggie' as const,
+        row: 0,
+        col: 2,
+        direction: 'up' as const,
+        moveTimer: 0,          // due to move this tick
+        moveInterval: 10,
+        playerMovesUntilEntry: -1,
+        ticksUntilEntry: -1,
+      }],
+    };
+    const ticked = applyTroggleTick(withReggieAtEdge);
+    expect(ticked.troggles[0].row).toBe(-1);
+    expect(ticked.troggles[0].col).toBe(-1);
+  });
+
+  it('re-arms reggie entry timers after edge exit', () => {
+    const state = createLevelState('multiples', 1);
+    const withReggieAtEdge = {
+      ...state,
+      tickCount: 200,
+      troggles: [{
+        ...state.troggles[0],
+        type: 'reggie' as const,
+        row: 5,
+        col: 2,
+        direction: 'down' as const,
+        moveTimer: 0,
+        moveInterval: 10,
+        playerMovesUntilEntry: -1,
+        ticksUntilEntry: -1,
+      }],
+    };
+    const ticked = applyTroggleTick(withReggieAtEdge);
+    expect(ticked.troggles[0].ticksUntilEntry).toBeGreaterThan(200);
+  });
+
+  it('does not deactivate non-reggie at edge', () => {
+    const state = createLevelState('multiples', 1);
+    const withSmartieAtEdge = {
+      ...state,
+      troggles: [{
+        ...state.troggles[0],
+        type: 'smartie' as const,
+        row: 0,
+        col: 2,
+        direction: 'up' as const,
+        moveTimer: 0,
+        moveInterval: 10,
+        playerMovesUntilEntry: -1,
+        ticksUntilEntry: -1,
+      }],
+    };
+    const ticked = applyTroggleTick(withSmartieAtEdge);
+    // Smartie stays on grid (row 0 or 1, not -1)
+    expect(ticked.troggles[0].row).not.toBe(-1);
+  });
+
   it('activates inactive troggle when tickCount reaches ticksUntilEntry', () => {
     const state = createLevelState('multiples', 1);
     // Force threshold to 5 ticks for deterministic test

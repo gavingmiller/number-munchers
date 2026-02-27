@@ -1,15 +1,15 @@
 import Phaser from 'phaser';
 import type { GameState } from '../types';
-import { CANVAS_WIDTH, GRID_Y } from '../constants';
+import { CANVAS_WIDTH, RULE_BANNER_H } from '../constants';
 
-const PAD_X = 8;
-const PAD_Y = 6;
-const LINE_H = 18;
-const FONT = { fontSize: '13px', fontFamily: 'monospace', color: '#00ff99' };
+// Sits in the right half of the rule banner so it never overlaps the centered rule text
+const RIGHT_X = CANVAS_WIDTH - 8;   // right-align anchor
+const TOP_Y = 5;                     // top padding inside banner
+const LINE_H = 14;                   // px per line at 11px font
+const FONT = { fontSize: '11px', fontFamily: 'monospace', color: '#00ff99' };
 
 export class DebugOverlay {
   private scene: Phaser.Scene;
-  private bg!: Phaser.GameObjects.Rectangle;
   private lines: Phaser.GameObjects.Text[] = [];
 
   constructor(scene: Phaser.Scene) {
@@ -17,70 +17,51 @@ export class DebugOverlay {
   }
 
   create(state: GameState): void {
-    // Background panel — positioned top-right of grid
-    this.bg = this.scene.add.rectangle(
-      CANVAS_WIDTH - 1, GRID_Y + 1,
-      1, 1,
-      0x000000, 0.65,
-    ).setOrigin(1, 0).setDepth(20);
-
     this.update(state);
   }
 
   update(state: GameState): void {
     const textLines = this.buildLines(state);
 
-    // Grow/shrink line objects to match
-    while (this.lines.length < textLines.length) {
-      const idx = this.lines.length;
-      const txt = this.scene.add.text(0, 0, '', FONT)
-        .setDepth(21)
-        .setOrigin(1, 0); // right-aligned
-      this.lines.push(txt);
-      // Position is set below
-      void idx;
+    // Clamp to banner height — never overflow
+    const maxLines = Math.floor((RULE_BANNER_H - TOP_Y * 2) / LINE_H);
+    const visible = textLines.slice(0, maxLines);
+
+    // Grow / shrink Phaser text objects to match
+    while (this.lines.length < visible.length) {
+      this.lines.push(
+        this.scene.add.text(0, 0, '', FONT)
+          .setOrigin(1, 0)   // right-aligned
+          .setDepth(10),
+      );
     }
-    while (this.lines.length > textLines.length) {
+    while (this.lines.length > visible.length) {
       this.lines.pop()!.destroy();
     }
 
-    const maxW = Math.max(...textLines.map((l) => this.approxWidth(l)));
-    const panelW = maxW + PAD_X * 2;
-    const panelH = textLines.length * LINE_H + PAD_Y * 2;
-
-    this.bg.setSize(panelW, panelH);
-
-    const rightX = CANVAS_WIDTH - PAD_X;
-    textLines.forEach((line, i) => {
+    visible.forEach((line, i) => {
       this.lines[i].setText(line);
-      this.lines[i].setPosition(rightX, GRID_Y + PAD_Y + i * LINE_H);
+      this.lines[i].setPosition(RIGHT_X, TOP_Y + i * LINE_H);
     });
   }
 
   private buildLines(state: GameState): string[] {
-    const lines: string[] = [`TICK: ${state.tickCount}`];
+    const lines: string[] = [`T:${state.tickCount}`];
 
     state.troggles.forEach((t, i) => {
       if (t.row === -1) {
-        // Inactive — show countdown to entry
-        const ticksLeft = t.ticksUntilEntry >= 0
-          ? Math.max(0, t.ticksUntilEntry - state.tickCount)
+        const tl = t.ticksUntilEntry >= 0
+          ? String(Math.max(0, t.ticksUntilEntry - state.tickCount))
           : '—';
-        const movesLeft = t.playerMovesUntilEntry >= 0
-          ? Math.max(0, t.playerMovesUntilEntry - state.playerMoveCount)
+        const ml = t.playerMovesUntilEntry >= 0
+          ? String(Math.max(0, t.playerMovesUntilEntry - state.playerMoveCount))
           : '—';
-        lines.push(`T${i} ${t.type.slice(0, 4)} | WAIT ${ticksLeft}t / ${movesLeft}mv`);
+        lines.push(`T${i}[${t.type.slice(0, 4)}] WAIT ${tl}t/${ml}mv`);
       } else {
-        // Active — show move timer and position
-        lines.push(`T${i} ${t.type.slice(0, 4)} @(${t.row},${t.col}) | mv:${t.moveTimer}t`);
+        lines.push(`T${i}[${t.type.slice(0, 4)}] @(${t.row},${t.col}) mv:${t.moveTimer}t`);
       }
     });
 
     return lines;
-  }
-
-  /** Rough character-width estimate for monospace font at 13px */
-  private approxWidth(text: string): number {
-    return text.length * 8;
   }
 }

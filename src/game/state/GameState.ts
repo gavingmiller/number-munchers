@@ -42,6 +42,32 @@ function activateTroggle(t: TroggleData): TroggleData {
   return { ...t, row: pos.row, col: pos.col, playerMovesUntilEntry: -1, ticksUntilEntry: -1 };
 }
 
+/** True when Reggie's current direction points off the grid boundary. */
+function isReggieAtEdge(t: TroggleData): boolean {
+  return (
+    (t.direction === 'up' && t.row === 0) ||
+    (t.direction === 'down' && t.row === ROWS - 1) ||
+    (t.direction === 'left' && t.col === 0) ||
+    (t.direction === 'right' && t.col === COLS - 1)
+  );
+}
+
+/** Deactivate a troggle that has walked off the edge, with re-armed entry timers. */
+function deactivateTroggleOnExit(
+  t: TroggleData,
+  currentTick: number,
+  currentMoves: number,
+): TroggleData {
+  return {
+    ...t,
+    row: -1,
+    col: -1,
+    moveTimer: t.moveInterval,
+    playerMovesUntilEntry: currentMoves + randomInt(5, 10),
+    ticksUntilEntry: currentTick + randomInt(80, 120),
+  };
+}
+
 export function createLevelState(
   mode: GameMode,
   level: number,
@@ -183,6 +209,11 @@ export function applyTroggleTick(state: GameState): GameState {
   troggles = troggles.map((t) => {
     if (t.row === -1) return t; // skip inactive troggles
     if (isTroggleDue(t)) {
+      // Reggie exits the grid instead of bouncing when reaching an edge
+      if (t.type === 'reggie' && isReggieAtEdge(t)) {
+        return deactivateTroggleOnExit(t, nextTickCount, state.playerMoveCount);
+      }
+
       const dir = nextMove(t, state.player, state.grid);
       const reset = resetTroggleTimer(t);
 
