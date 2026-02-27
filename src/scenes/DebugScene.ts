@@ -1,175 +1,141 @@
 import Phaser from 'phaser';
-import {
-  CANVAS_WIDTH, CANVAS_HEIGHT,
-  GRID_Y, CELL_W, CELL_H,
-  TROGGLE_COLORS,
-  COLOR_CELL, COLOR_CELL_BORDER,
-} from '../constants';
-import { ROWS, COLS } from '../types';
-import { randomInt } from '../game/logic/MathUtils';
+import type { GameState, TroggleType } from '../types';
+import { createLevelState, applyTroggleTick } from '../game/state/GameState';
+import { createTroggle } from '../game/entities/Troggle';
+import { GridRenderer } from '../ui/GridRenderer';
+import { HUD } from '../ui/HUD';
+import { RuleBanner } from '../ui/RuleBanner';
+import { DebugOverlay } from '../ui/DebugOverlay';
+import { CANVAS_WIDTH, GRID_Y, GRID_H, TROGGLE_COLORS } from '../constants';
 
-// One-line behavior descriptions for the legend
-const TROGGLE_INFO: Array<{ type: string; color: number; desc: string }> = [
-  { type: 'reggie',  color: TROGGLE_COLORS.reggie,  desc: 'Straight line, exits edge, re-enters later' },
-  { type: 'smartie', color: TROGGLE_COLORS.smartie,  desc: 'Chases player (row-first priority)' },
-  { type: 'bashful', color: TROGGLE_COLORS.bashful,  desc: 'Flees player when within distance 3' },
-  { type: 'helper',  color: TROGGLE_COLORS.helper,   desc: 'Moves randomly each tick' },
-  { type: 'worker',  color: TROGGLE_COLORS.worker,   desc: 'Enters at T:1000 — fastest, seeks closest cell' },
-];
+// 2× speed vs production (production = 100ms)
+const DEBUG_TICK_MS = 50;
 
-interface DebugTroggle {
-  type: string;
-  color: number;
-  row: number;
-  col: number;
-  sprite: Phaser.GameObjects.Rectangle;
-  entryTick: number; // absolute tick when it will enter
-  active: boolean;
+interface TroggleSpec {
+  type: TroggleType;
+  desc: string;
 }
 
+const TROGGLE_SPECS: TroggleSpec[] = [
+  { type: 'reggie',  desc: 'Straight line, exits edge, re-enters later' },
+  { type: 'smartie', desc: 'Chases player (row-first priority)' },
+  { type: 'bashful', desc: 'Flees player when within distance 3' },
+  { type: 'helper',  desc: 'Moves randomly each tick' },
+  { type: 'worker',  desc: 'Fastest — seeks closest cell to player' },
+];
+
 export class DebugScene extends Phaser.Scene {
-  private tick = 0;
-  private scoreTxt!: Phaser.GameObjects.Text;
-  private tickTxt!: Phaser.GameObjects.Text;
-  private troggles: DebugTroggle[] = [];
-  private troggleTimer!: Phaser.Time.TimerEvent;
-  private statusLines: Phaser.GameObjects.Text[] = [];
+  private state!: GameState;
+  private gridRenderer!: GridRenderer;
+  private hud!: HUD;
+  private ruleBanner!: RuleBanner;
+  private debugOverlay!: DebugOverlay;
+  private gameTickTimer = 0;
 
   constructor() {
     super({ key: 'Debug' });
   }
 
   create(): void {
-    // Background grid
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        this.add.rectangle(
-          c * CELL_W + CELL_W / 2,
-          GRID_Y + r * CELL_H + CELL_H / 2,
-          CELL_W - 2, CELL_H - 2,
-          COLOR_CELL,
-        ).setStrokeStyle(1, COLOR_CELL_BORDER);
-      }
+    // Use real game state (level 10 has full troggle roster + real grid/rule)
+    const base = createLevelState('multiples', 10);
+    const baseInterval = base.troggles[0]?.moveInterval ?? 10;
+    const workerInterval = Math.max(1, Math.floor(baseInterval * 0.5));
+
+    // Replace troggles: one of every type, low tick entry thresholds (20/40/60/80/100),
+    // playerMovesUntilEntry=9999 so they only enter via ticks (not player moves)
+    this.state = {
+      ...base,
+      troggles: TROGGLE_SPECS.map((spec, i) =>
+        createTroggle(
+          `debug-${spec.type}`,
+          spec.type,
+          -1, -1,
+          spec.type === 'worker' ? workerInterval : baseInterval,
+          9999,        // playerMovesUntilEntry: ignore in debug
+          20 + i * 20, // ticksUntilEntry: 20, 40, 60, 80, 100
+        )
+      ),
+    };
+
+    // Real UI stack — identical to GameScene
+    this.ruleBanner = new RuleBanner(this);
+    this.ruleBanner.create(this.state);
+
+    this.hud = new HUD(this);
+    this.hud.create(this.state);
+
+    this.gridRenderer = new GridRenderer(this);
+    this.gridRenderer.create(this.state);
+
+    this.debugOverlay = new DebugOverlay(this);
+    this.debugOverlay.create(this.state);
+
+    // Legend in the DPad zone (below grid) — no DPad in debug mode
+    this.buildLegend();
+
+    // SPACE exits to main menu
+    if (this.input.keyboard) {
+      this.input.keyboard
+        .addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
+        .on('down', () => { this.scene.start('MainMenu'); });
     }
+  }
+
+  update(_time: number, delta: number): void {
+    this.gameTickTimer += delta;
+    if (this.gameTickTimer >= DEBUG_TICK_MS) {
+      this.gameTickTimer -= DEBUG_TICK_MS;
+
+      this.state = applyTroggleTick(this.state);
+
+      // Random score 1–100 per tick
+      const pts = Math.floor(Math.random() * 100) + 1;
+      this.state = {
+        ...this.state,
+        score: { ...this.state.score, current: this.state.score.current + pts },
+      };
+
+      this.gridRenderer.update(this.state);
+      this.hud.update(this.state);
+      this.debugOverlay.update(this.state);
+    }
+  }
+
+  private buildLegend(): void {
+    const legendY = GRID_Y + GRID_H + 16;
+    const rowH = 52;
 
     // Header
-    this.add.text(CANVAS_WIDTH / 2, 16, 'DEBUG MODE', {
-      fontSize: '22px', fontFamily: 'Arial', color: '#ff4444', fontStyle: 'bold',
+    this.add.text(CANVAS_WIDTH / 2, legendY, 'DEBUG MODE  ·  SPACE to exit', {
+      fontSize: '15px',
+      fontFamily: 'monospace',
+      color: '#ff4444',
+      fontStyle: 'bold',
     }).setOrigin(0.5, 0);
 
-    this.add.text(CANVAS_WIDTH / 2, 44, 'SPACE to exit', {
-      fontSize: '14px', fontFamily: 'Arial', color: '#888888',
-    }).setOrigin(0.5, 0);
+    TROGGLE_SPECS.forEach((spec, i) => {
+      const y = legendY + 26 + i * rowH;
+      const color = TROGGLE_COLORS[spec.type] ?? 0xffffff;
 
-    // Score + tick display
-    this.scoreTxt = this.add.text(16, 16, 'Score: 0', {
-      fontSize: '16px', fontFamily: 'monospace', color: '#00ff99',
-    });
-    this.tickTxt = this.add.text(16, 36, 'T: 0', {
-      fontSize: '16px', fontFamily: 'monospace', color: '#00ff99',
-    });
+      // Color swatch
+      this.add.rectangle(28, y + rowH / 2 - 4, 20, 20, color, 0.9)
+        .setStrokeStyle(1, color);
 
-    // Legend (below grid)
-    const legendY = GRID_Y + ROWS * CELL_H + 16;
-    this.add.text(16, legendY, 'TROGGLES:', {
-      fontSize: '13px', fontFamily: 'monospace', color: '#ffd700',
-    });
-
-    TROGGLE_INFO.forEach((info, i) => {
-      const y = legendY + 20 + i * 28;
-      this.add.rectangle(24, y + 10, 18, 18, info.color, 0.9)
-        .setStrokeStyle(1, info.color);
-      this.add.text(40, y, `${info.type}`, {
-        fontSize: '13px', fontFamily: 'monospace', color: '#ffffff', fontStyle: 'bold',
+      // Type name
+      this.add.text(48, y + 4, spec.type, {
+        fontSize: '15px',
+        fontFamily: 'monospace',
+        color: '#ffffff',
+        fontStyle: 'bold',
       });
-      this.add.text(40, y + 14, info.desc, {
-        fontSize: '11px', fontFamily: 'monospace', color: '#aaaaaa',
+
+      // Behavior description
+      this.add.text(48, y + 24, spec.desc, {
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        color: '#aaaaaa',
       });
-    });
-
-    // Status panel (right side) for entry countdowns
-    const statusX = CANVAS_WIDTH - 8;
-    for (let i = 0; i < TROGGLE_INFO.length; i++) {
-      const txt = this.add.text(statusX, GRID_Y + i * 18, '', {
-        fontSize: '11px', fontFamily: 'monospace', color: '#00ff99',
-      }).setOrigin(1, 0).setDepth(10);
-      this.statusLines.push(txt);
-    }
-
-    // Build debug troggles — stagger entry ticks
-    TROGGLE_INFO.forEach((info, i) => {
-      const entryTick = info.type === 'worker' ? 1000 : randomInt(30 + i * 20, 60 + i * 20);
-      const sprite = this.add.rectangle(-100, -100, CELL_W - 16, CELL_H - 16, info.color, 0.8)
-        .setStrokeStyle(2, info.color)
-        .setDepth(4)
-        .setVisible(false);
-
-      this.troggles.push({
-        type: info.type,
-        color: info.color,
-        row: -1,
-        col: -1,
-        sprite,
-        entryTick,
-        active: false,
-      });
-    });
-
-    // Space to exit
-    if (this.input.keyboard) {
-      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE).on('down', () => {
-        this.troggleTimer.remove();
-        this.scene.start('MainMenu');
-      });
-    }
-
-    // Main game loop timer
-    this.troggleTimer = this.time.addEvent({
-      delay: 100,
-      loop: true,
-      callback: this.gameTick,
-      callbackScope: this,
     });
   }
-
-  private gameTick(): void {
-    this.tick++;
-    const score = this.tick * 10;
-
-    this.scoreTxt.setText(`Score: ${score}`);
-    this.tickTxt.setText(`T: ${this.tick}`);
-
-    // Activate troggles whose entry tick has been reached
-    this.troggles.forEach((t) => {
-      if (!t.active && this.tick >= t.entryTick) {
-        const edgePos = this.randomEdge();
-        t.row = edgePos.row;
-        t.col = edgePos.col;
-        t.active = true;
-        t.sprite.setVisible(true);
-        t.sprite.setPosition(this.cellX(t.col), this.cellY(t.row));
-      }
-    });
-
-    // Update status lines
-    this.troggles.forEach((t, i) => {
-      if (!t.active) {
-        const remaining = t.entryTick - this.tick;
-        this.statusLines[i].setText(`${t.type.slice(0,4)} WAIT ${remaining}t`);
-      } else {
-        this.statusLines[i].setText(`${t.type.slice(0,4)} @(${t.row},${t.col})`);
-      }
-    });
-  }
-
-  private randomEdge(): { row: number; col: number } {
-    const side = Math.floor(Math.random() * 4);
-    if (side === 0) return { row: 0,        col: Math.floor(Math.random() * COLS) };
-    if (side === 1) return { row: ROWS - 1,  col: Math.floor(Math.random() * COLS) };
-    if (side === 2) return { row: Math.floor(Math.random() * ROWS), col: 0 };
-    return              { row: Math.floor(Math.random() * ROWS), col: COLS - 1 };
-  }
-
-  private cellX(col: number): number { return col * CELL_W + CELL_W / 2; }
-  private cellY(row: number): number { return GRID_Y + row * CELL_H + CELL_H / 2; }
 }
