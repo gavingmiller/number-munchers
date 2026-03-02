@@ -8,6 +8,8 @@ import {
 import { drawCharacter } from './CharacterSprites';
 import { drawTroggle } from './TroggleSprites';
 
+const TROGGLE_PIXEL_SIZE = 6;
+
 export class GridRenderer {
   private scene: Phaser.Scene;
   private character: CharacterType;
@@ -52,7 +54,16 @@ export class GridRenderer {
     this.playerContainer = this.createPlayerSprite(px, py);
     this.playerContainer.setDepth(5);
 
-    // Troggle sprites
+    // Pre-create troggle containers (hidden until activated)
+    for (const t of state.troggles) {
+      const container = this.scene.add.container(0, 0);
+      drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
+      container.setDepth(4);
+      container.setVisible(false);
+      this.troggleSprites.set(t.id, container);
+    }
+
+    // Initial sync
     this.syncTroggles(state.troggles);
   }
 
@@ -106,34 +117,15 @@ export class GridRenderer {
   }
 
   private syncTroggles(troggles: TroggleData[]): void {
-    const activeIds = new Set<string>();
-
     for (const t of troggles) {
-      activeIds.add(t.id);
       const sprite = this.troggleSprites.get(t.id);
+      if (!sprite) continue;
 
       if (t.row === -1) {
-        if (sprite) sprite.setVisible(false);
-        continue;
-      }
-
-      if (!sprite) {
-        const container = this.scene.add.container(
-          this.cellX(t.col), this.cellY(t.row),
-        );
-        drawTroggle(this.scene, container, t.type, 4);
-        container.setDepth(4);
-        this.troggleSprites.set(t.id, container);
+        sprite.setVisible(false);
       } else {
         sprite.setVisible(true);
         sprite.setPosition(this.cellX(t.col), this.cellY(t.row));
-      }
-    }
-
-    for (const [id, sprite] of this.troggleSprites) {
-      if (!activeIds.has(id)) {
-        sprite.destroy();
-        this.troggleSprites.delete(id);
       }
     }
   }

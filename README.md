@@ -34,15 +34,15 @@ Nine playable pixel-art characters, selected after choosing a game mode:
 
 ## Troggles
 
-Enemy creatures that patrol the grid. Colliding with one costs a life.
+Enemy creatures that patrol the grid. Colliding with one costs a life. Three troggle types have dedicated pixel art sprites; the rest use colored rectangle placeholders.
 
-| Type | Color | Behavior |
-|------|-------|----------|
-| Reggie | Red | Walks in a straight line, exits at edges, re-enters later |
-| Smartie | Cyan | Chases the player using Manhattan distance |
-| Bashful | Orange | Flees when close (distance < 3), random otherwise |
-| Helper | Purple | Pure random movement |
-| Worker | Gray | Greedy best-next-cell toward player, 50% faster, late entry |
+| Type | Color | Sprite | Behavior |
+|------|-------|--------|----------|
+| Reggie | Red | Placeholder | Walks in a straight line, exits at edges, re-enters later |
+| Fangs | Cyan | Snake with forked tongue | Chases the player using Manhattan distance |
+| Bashful | Orange | Placeholder | Flees when close (distance < 3), random otherwise |
+| Ember | Orange-yellow | Boxy fireball with grin | Pure random movement |
+| Bonehead | Gray | Hooded skull | Greedy best-next-cell toward player, 50% faster, late entry (1000 ticks) |
 
 Troggles enter from grid edges on staggered timers. Count and speed scale with level:
 - Levels 1-3: 1 troggle, slow
@@ -85,7 +85,7 @@ A separate Debug Mode (accessible from the main menu) spawns one of each troggle
 - `src/game/logic/` — Pure math and game logic (grid generation, collision, troggle AI, rule evaluation)
 - `src/game/entities/` — Entity creation (player, troggle, cell)
 - `src/game/state/` — State management and score tracking
-- `src/ui/` — Phaser rendering (grid, HUD, d-pad, character sprites)
+- `src/ui/` — Phaser rendering (grid, HUD, d-pad, character sprites, troggle sprites)
 - `src/scenes/` — Phaser scene lifecycle
 
 **Procedural graphics** — All characters, troggles, and UI elements are drawn with the Phaser Graphics API (`fillRect` pixel grids). Zero image assets.
