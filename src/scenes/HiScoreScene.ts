@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CANVAS_WIDTH, COLOR_CELL } from '../constants';
+import { CANVAS_WIDTH } from '../constants';
 
 interface HiScoreData {
   score: number;

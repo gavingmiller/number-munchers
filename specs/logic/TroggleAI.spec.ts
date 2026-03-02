@@ -34,14 +34,14 @@ describe('nextMove', () => {
   const emptyGrid: CellData[] = [];
   const player: PlayerData = { row: 3, col: 3, lives: 3 };
 
-  it('smartie moves toward player when player is directly right', () => {
-    const troggle = createTroggle('t1', 'smartie', 3, 0, 10);
+  it('fangs moves toward player when player is directly right', () => {
+    const troggle = createTroggle('t1', 'fangs', 3, 0, 10);
     const dir = nextMove(troggle, player, emptyGrid);
     expect(dir).toBe('right');
   });
 
-  it('smartie moves toward player when player is directly below', () => {
-    const troggle = createTroggle('t1', 'smartie', 0, 3, 10);
+  it('fangs moves toward player when player is directly below', () => {
+    const troggle = createTroggle('t1', 'fangs', 0, 3, 10);
     const dir = nextMove(troggle, player, emptyGrid);
     expect(dir).toBe('down');
   });
@@ -58,16 +58,16 @@ describe('nextMove', () => {
     expect(dir).toBe('left');
   });
 
-  it('worker moves toward adjacent cell closest to player', () => {
-    // Player at (3,3), worker at (0,0) — right and down both reduce distance equally
-    const troggle = createTroggle('t1', 'worker', 0, 0, 5);
+  it('bonehead moves toward adjacent cell closest to player', () => {
+    // Player at (3,3), bonehead at (0,0) — right and down both reduce distance equally
+    const troggle = createTroggle('t1', 'bonehead', 0, 0, 5);
     const dir = nextMove(troggle, player, emptyGrid);
     expect(['right', 'down']).toContain(dir);
   });
 
-  it('worker picks single best direction when unambiguous', () => {
-    // Worker directly left of player on same row — only 'right' closes distance
-    const troggle = createTroggle('t1', 'worker', 3, 1, 5); // player at (3,3)
+  it('bonehead picks single best direction when unambiguous', () => {
+    // Bonehead directly left of player on same row — only 'right' closes distance
+    const troggle = createTroggle('t1', 'bonehead', 3, 1, 5); // player at (3,3)
     const dir = nextMove(troggle, player, emptyGrid);
     expect(dir).toBe('right');
   });

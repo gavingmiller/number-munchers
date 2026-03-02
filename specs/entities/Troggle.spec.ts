@@ -14,9 +14,9 @@ describe('createTroggle', () => {
   });
 
   it('sets all fields correctly', () => {
-    const t = createTroggle('t2', 'smartie', 3, 4, 25);
+    const t = createTroggle('t2', 'fangs', 3, 4, 25);
     expect(t.id).toBe('t2');
-    expect(t.type).toBe('smartie');
+    expect(t.type).toBe('fangs');
     expect(t.row).toBe(3);
     expect(t.col).toBe(4);
   });

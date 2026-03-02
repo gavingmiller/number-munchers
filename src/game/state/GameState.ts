@@ -23,10 +23,10 @@ import { createScore, addPoints, updatePointsPerCorrect } from './ScoreTracker.t
 
 const TROGGLE_TYPES: TroggleType[] = [
   'reggie',
-  'smartie',
+  'fangs',
   'bashful',
-  'helper',
-  'worker',
+  'ember',
+  'bonehead',
 ];
 
 // Edge positions used when a troggle activates and enters the grid
@@ -108,13 +108,13 @@ export function createLevelState(
   const troggles = [];
   for (let i = 0; i < config.troggleCount; i++) {
     const type = TROGGLE_TYPES[i % TROGGLE_TYPES.length];
-    const isWorker = type === 'worker';
+    const isBonehead = type === 'bonehead';
     // Worker: 50% faster, enters only after 1000 ticks (never via move count)
-    const moveInterval = isWorker
+    const moveInterval = isBonehead
       ? Math.max(1, Math.floor(config.troggleMoveInterval * 0.5))
       : config.troggleMoveInterval;
-    const movesEntry = isWorker ? 9999 : randomInt(5 + i * 5, 10 + i * 5);
-    const tickEntry  = isWorker ? 1000 : randomInt(80 + i * 40, 120 + i * 40);
+    const movesEntry = isBonehead ? 9999 : randomInt(5 + i * 5, 10 + i * 5);
+    const tickEntry  = isBonehead ? 1000 : randomInt(80 + i * 40, 120 + i * 40);
 
     troggles.push(
       createTroggle(

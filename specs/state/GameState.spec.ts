@@ -34,22 +34,22 @@ describe('createLevelState', () => {
     expect(state.playerMoveCount).toBe(0);
   });
 
-  it('worker troggle has ticksUntilEntry of 1000', () => {
-    // Level 5 includes a worker (index 4 → type worker)
-    const state = createLevelState('multiples', 10); // enough troggles to get a worker
-    const worker = state.troggles.find((t) => t.type === 'worker');
-    if (worker) {
-      expect(worker.ticksUntilEntry).toBe(1000);
-      expect(worker.playerMovesUntilEntry).toBe(9999);
+  it('bonehead troggle has ticksUntilEntry of 1000', () => {
+    // Level 10 includes a bonehead (index 4 → type bonehead)
+    const state = createLevelState('multiples', 10); // enough troggles to get a bonehead
+    const bonehead = state.troggles.find((t) => t.type === 'bonehead');
+    if (bonehead) {
+      expect(bonehead.ticksUntilEntry).toBe(1000);
+      expect(bonehead.playerMovesUntilEntry).toBe(9999);
     }
   });
 
-  it('worker move interval is 50% of non-worker interval', () => {
+  it('bonehead move interval is 50% of non-bonehead interval', () => {
     const state = createLevelState('multiples', 10);
-    const worker = state.troggles.find((t) => t.type === 'worker');
-    const other  = state.troggles.find((t) => t.type !== 'worker');
-    if (worker && other) {
-      expect(worker.moveInterval).toBe(Math.max(1, Math.floor(other.moveInterval * 0.5)));
+    const bonehead = state.troggles.find((t) => t.type === 'bonehead');
+    const other    = state.troggles.find((t) => t.type !== 'bonehead');
+    if (bonehead && other) {
+      expect(bonehead.moveInterval).toBe(Math.max(1, Math.floor(other.moveInterval * 0.5)));
     }
   });
 
@@ -280,11 +280,11 @@ describe('applyTroggleTick', () => {
 
   it('does not deactivate non-reggie at edge', () => {
     const state = createLevelState('multiples', 1);
-    const withSmartieAtEdge = {
+    const withFangsAtEdge = {
       ...state,
       troggles: [{
         ...state.troggles[0],
-        type: 'smartie' as const,
+        type: 'fangs' as const,
         row: 0,
         col: 2,
         direction: 'up' as const,
@@ -294,7 +294,7 @@ describe('applyTroggleTick', () => {
         ticksUntilEntry: -1,
       }],
     };
-    const ticked = applyTroggleTick(withSmartieAtEdge);
+    const ticked = applyTroggleTick(withFangsAtEdge);
     // Smartie stays on grid (row 0 or 1, not -1)
     expect(ticked.troggles[0].row).not.toBe(-1);
   });

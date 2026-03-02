@@ -4,7 +4,7 @@
 
 export type GameMode = 'multiples' | 'factors' | 'primes' | 'equalities';
 export type CharacterType = 'claude' | 'box' | 'axolotl' | 'electricmouse' | 'marshmallow' | 'robot' | 'nyancat' | 'pusheen' | 'mrpickle';
-export type TroggleType = 'reggie' | 'smartie' | 'bashful' | 'helper' | 'worker';
+export type TroggleType = 'reggie' | 'fangs' | 'bashful' | 'ember' | 'bonehead';
 export type CellState = 'filled' | 'blank';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type GameStatus = 'playing' | 'life-lost' | 'level-complete' | 'game-over' | 'cutscene';

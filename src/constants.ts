@@ -41,10 +41,10 @@ export const COLOR_CELL_TEXT = '#e0e0e0';
 // Troggle colors
 export const TROGGLE_COLORS: Record<string, number> = {
   reggie: 0xcc4444,
-  smartie: 0x44aacc,
+  fangs: 0x44aacc,
   bashful: 0xcc8844,
-  helper: 0xaa44cc,
-  worker: 0x888888,
+  ember: 0xf48c06,
+  bonehead: 0x6b6b7a,
 };
 
 // Player move interval (ms between auto-repeat)

@@ -4,9 +4,9 @@ import { ROWS, COLS, cellIndex } from '../types';
 import {
   GRID_Y, CELL_W, CELL_H,
   COLOR_CELL, COLOR_CELL_BORDER, COLOR_CELL_TEXT,
-  TROGGLE_COLORS,
 } from '../constants';
 import { drawCharacter } from './CharacterSprites';
+import { drawTroggle } from './TroggleSprites';
 
 export class GridRenderer {
   private scene: Phaser.Scene;
@@ -14,7 +14,7 @@ export class GridRenderer {
   private cellBgs: Phaser.GameObjects.Rectangle[][] = [];
   private cellTexts: Phaser.GameObjects.Text[][] = [];
   private playerContainer!: Phaser.GameObjects.Container;
-  private troggleSprites: Map<string, Phaser.GameObjects.Rectangle> = new Map();
+  private troggleSprites: Map<string, Phaser.GameObjects.Container> = new Map();
 
   constructor(scene: Phaser.Scene, character: CharacterType = 'box') {
     this.scene = scene;
@@ -113,28 +113,23 @@ export class GridRenderer {
       const sprite = this.troggleSprites.get(t.id);
 
       if (t.row === -1) {
-        // Inactive troggle: hide existing sprite, don't create a new one
         if (sprite) sprite.setVisible(false);
         continue;
       }
 
-      const tColor = TROGGLE_COLORS[t.type] ?? 0xcc4444;
-
       if (!sprite) {
-        const newSprite = this.scene.add.rectangle(
+        const container = this.scene.add.container(
           this.cellX(t.col), this.cellY(t.row),
-          CELL_W - 16, CELL_H - 16,
-          tColor, 0.8,
-        ).setStrokeStyle(2, tColor);
-        newSprite.setDepth(4);
-        this.troggleSprites.set(t.id, newSprite);
+        );
+        drawTroggle(this.scene, container, t.type, 4);
+        container.setDepth(4);
+        this.troggleSprites.set(t.id, container);
       } else {
         sprite.setVisible(true);
         sprite.setPosition(this.cellX(t.col), this.cellY(t.row));
       }
     }
 
-    // Remove sprites for troggles no longer in state
     for (const [id, sprite] of this.troggleSprites) {
       if (!activeIds.has(id)) {
         sprite.destroy();

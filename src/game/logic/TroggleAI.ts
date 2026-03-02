@@ -57,7 +57,7 @@ export function nextMove(
       return randomDirection(valid);
     }
 
-    case 'smartie': {
+    case 'fangs': {
       // Move toward player, reduce max of |drow|, |dcol|; row first on tie
       const drow = player.row - troggle.row;
       const dcol = player.col - troggle.col;
@@ -101,10 +101,10 @@ export function nextMove(
       return randomDirection(valid);
     }
 
-    case 'helper':
+    case 'ember':
       return randomDirection(valid);
 
-    case 'worker': {
+    case 'bonehead': {
       // Move toward the adjacent cell with minimum Manhattan distance to player
       let bestDir = valid[0];
       let bestDist = Infinity;

@@ -19,10 +19,10 @@ interface TroggleSpec {
 
 const TROGGLE_SPECS: TroggleSpec[] = [
   { type: 'reggie',  desc: 'Straight line, exits edge, re-enters later' },
-  { type: 'smartie', desc: 'Chases player (row-first priority)' },
-  { type: 'bashful', desc: 'Flees player when within distance 3' },
-  { type: 'helper',  desc: 'Moves randomly each tick' },
-  { type: 'worker',  desc: 'Fastest — seeks closest cell to player' },
+  { type: 'fangs',     desc: 'Chases player (row-first priority)' },
+  { type: 'bashful',   desc: 'Flees player when within distance 3' },
+  { type: 'ember',     desc: 'Drifts randomly each tick' },
+  { type: 'bonehead',  desc: 'Fastest — seeks closest cell to player' },
 ];
 
 export class DebugScene extends Phaser.Scene {
@@ -46,7 +46,7 @@ export class DebugScene extends Phaser.Scene {
     // Use real game state (level 10 has full troggle roster + real grid/rule)
     const base = createLevelState('multiples', 10);
     const baseInterval = base.troggles[0]?.moveInterval ?? 10;
-    const workerInterval = Math.max(1, Math.floor(baseInterval * 0.5));
+    const boneheadInterval = Math.max(1, Math.floor(baseInterval * 0.5));
 
     // Replace troggles: one of every type, low tick entry thresholds (20/40/60/80/100),
     // playerMovesUntilEntry=9999 so they only enter via ticks (not player moves)
@@ -57,7 +57,7 @@ export class DebugScene extends Phaser.Scene {
           `debug-${spec.type}`,
           spec.type,
           -1, -1,
-          spec.type === 'worker' ? workerInterval : baseInterval,
+          spec.type === 'bonehead' ? boneheadInterval : baseInterval,
           9999,        // playerMovesUntilEntry: ignore in debug
           20 + i * 20, // ticksUntilEntry: 20, 40, 60, 80, 100
         )
