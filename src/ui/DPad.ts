@@ -18,7 +18,7 @@ export class DPad {
     this.onDirection = onDirection;
   }
 
-  create(onMunch: () => void): void {
+  create(onMunch: () => void, showMunch = true): void {
     const cx = CANVAS_WIDTH / 2;
     const sz = DPAD_BTN_SIZE;
     const centerY = DPAD_Y + DPAD_BTN_SIZE * 2;
@@ -59,34 +59,36 @@ export class DPad {
       this.buttons.push({ bg, label });
     }
 
-    // Munch button in center of d-pad
-    const munchBg = this.scene.add.rectangle(cx, centerY, sz - 16, sz - 16, 0x3a5a2a, 0.8)
-      .setStrokeStyle(2, 0x44cc44)
-      .setInteractive({ useHandCursor: true })
-      .setScrollFactor(0)
-      .setDepth(10);
+    if (showMunch) {
+      // Munch button in center of d-pad
+      const munchBg = this.scene.add.rectangle(cx, centerY, sz - 16, sz - 16, 0x3a5a2a, 0.8)
+        .setStrokeStyle(2, 0x44cc44)
+        .setInteractive({ useHandCursor: true })
+        .setScrollFactor(0)
+        .setDepth(10);
 
-    const munchLabel = this.scene.add.text(cx, centerY, 'MUNCH', {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      color: '#44cc44',
-      fontStyle: 'bold',
-    }).setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(11);
+      const munchLabel = this.scene.add.text(cx, centerY, 'MUNCH', {
+        fontSize: '18px',
+        fontFamily: 'Arial',
+        color: '#44cc44',
+        fontStyle: 'bold',
+      }).setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(11);
 
-    munchBg.on('pointerdown', () => {
-      munchBg.setFillStyle(0x44cc44, 0.5);
-      onMunch();
-    });
-    munchBg.on('pointerup', () => {
-      munchBg.setFillStyle(0x3a5a2a, 0.8);
-    });
-    munchBg.on('pointerout', () => {
-      munchBg.setFillStyle(0x3a5a2a, 0.8);
-    });
+      munchBg.on('pointerdown', () => {
+        munchBg.setFillStyle(0x44cc44, 0.5);
+        onMunch();
+      });
+      munchBg.on('pointerup', () => {
+        munchBg.setFillStyle(0x3a5a2a, 0.8);
+      });
+      munchBg.on('pointerout', () => {
+        munchBg.setFillStyle(0x3a5a2a, 0.8);
+      });
 
-    this.munchBtn = { bg: munchBg, label: munchLabel };
+      this.munchBtn = { bg: munchBg, label: munchLabel };
+    }
   }
 
   destroy(): void {

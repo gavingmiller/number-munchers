@@ -5,6 +5,7 @@ import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { CutsceneScene } from './scenes/CutsceneScene';
 import { HiScoreScene } from './scenes/HiScoreScene';
+import { CharacterSelectScene } from './scenes/CharacterSelectScene';
 import { DebugScene } from './scenes/DebugScene';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_BG } from './constants';
 
@@ -17,7 +18,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MainMenuScene, GameScene, GameOverScene, CutsceneScene, HiScoreScene, DebugScene],
+  scene: [BootScene, MainMenuScene, CharacterSelectScene, GameScene, GameOverScene, CutsceneScene, HiScoreScene, DebugScene],
   input: {
     activePointers: 4,
   },

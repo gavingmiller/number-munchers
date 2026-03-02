@@ -39,21 +39,22 @@ const EDGE_POSITIONS: Array<{ row: number; col: number }> = [
 
 /** Pick a traversal direction for Reggie based on which edge it entered from. */
 function reggieEntryDirection(row: number, col: number): Direction {
-  const onTopBottom = row === 0 || row === ROWS - 1;
-  const onLeftRight = col === 0 || col === COLS - 1;
+  const onTop    = row === 0;
+  const onBottom = row === ROWS - 1;
+  const onLeft   = col === 0;
+  const onRight  = col === COLS - 1;
 
-  if (onTopBottom && !onLeftRight) {
-    // Pure top/bottom edge: traverse the row
-    return Math.random() < 0.5 ? 'right' : 'left';
-  }
-  if (onLeftRight && !onTopBottom) {
-    // Pure left/right edge: traverse the column
-    return Math.random() < 0.5 ? 'up' : 'down';
-  }
-  // Corner: randomly pick row-traversal or column-traversal
-  return Math.random() < 0.5
-    ? (Math.random() < 0.5 ? 'right' : 'left')
-    : (Math.random() < 0.5 ? 'up' : 'down');
+  // Pure edges: return the one unambiguous inward direction
+  if (onTop    && !onLeft && !onRight) return 'down';
+  if (onBottom && !onLeft && !onRight) return 'up';
+  if (onLeft   && !onTop  && !onBottom) return 'right';
+  if (onRight  && !onTop  && !onBottom) return 'left';
+
+  // Corners: randomly pick one of the two valid inward directions
+  if (onTop    && onLeft)  return Math.random() < 0.5 ? 'down'  : 'right';
+  if (onTop    && onRight) return Math.random() < 0.5 ? 'down'  : 'left';
+  if (onBottom && onLeft)  return Math.random() < 0.5 ? 'up'    : 'right';
+  return                          Math.random() < 0.5 ? 'up'    : 'left'; // bottom-right
 }
 
 function activateTroggle(t: TroggleData): TroggleData {

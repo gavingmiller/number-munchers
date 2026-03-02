@@ -3,6 +3,7 @@
 // ============================================================
 
 export type GameMode = 'multiples' | 'factors' | 'primes' | 'equalities';
+export type CharacterType = 'claude' | 'box' | 'axolotl' | 'electricmouse' | 'marshmallow' | 'robot' | 'nyancat' | 'pusheen' | 'mrpickle';
 export type TroggleType = 'reggie' | 'smartie' | 'bashful' | 'helper' | 'worker';
 export type CellState = 'filled' | 'blank';
 export type Direction = 'up' | 'down' | 'left' | 'right';

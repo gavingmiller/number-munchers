@@ -15,11 +15,23 @@ const MODES: ModeOption[] = [
 ];
 
 export class MainMenuScene extends Phaser.Scene {
+  private selectedIndex = 0;
+  private btnBgs: Phaser.GameObjects.Rectangle[] = [];
+  private btnLabels: Phaser.GameObjects.Text[] = [];
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private spaceKey?: Phaser.Input.Keyboard.Key;
+  private moveTimer = 0;
+  private readonly MOVE_MS = 200;
+
   constructor() {
     super({ key: 'MainMenu' });
   }
 
   create(): void {
+    this.selectedIndex = 0;
+    this.btnBgs = [];
+    this.btnLabels = [];
+
     const centerX = CANVAS_WIDTH / 2;
 
     // Title
@@ -60,18 +72,17 @@ export class MainMenuScene extends Phaser.Scene {
         align: 'center',
       }).setOrigin(0.5);
 
-      bg.on('pointerover', () => {
-        bg.setFillStyle(0x1e3a5f);
-        label.setColor('#ffd700');
-      });
+      this.btnBgs.push(bg);
+      this.btnLabels.push(label);
 
-      bg.on('pointerout', () => {
-        bg.setFillStyle(COLOR_CELL);
-        label.setColor('#ffffff');
+      bg.on('pointerover', () => {
+        this.selectedIndex = i;
+        this.updateHighlight();
       });
 
       bg.on('pointerdown', () => {
-        this.scene.start('Game', { mode: opt.mode });
+        this.selectedIndex = i;
+        this.confirmSelection();
       });
     }
 
@@ -85,15 +96,78 @@ export class MainMenuScene extends Phaser.Scene {
       fontFamily: 'Arial',
       color: '#555555',
     }).setOrigin(0.5);
-    debugBg.on('pointerover', () => { debugBg.setStrokeStyle(1, 0xff4444); debugLabel.setColor('#ff4444'); });
-    debugBg.on('pointerout',  () => { debugBg.setStrokeStyle(1, 0x555555); debugLabel.setColor('#555555'); });
-    debugBg.on('pointerdown', () => { this.scene.start('Debug'); });
+
+    this.btnBgs.push(debugBg);
+    this.btnLabels.push(debugLabel);
+
+    debugBg.on('pointerover', () => {
+      this.selectedIndex = MODES.length;
+      this.updateHighlight();
+    });
+    debugBg.on('pointerdown', () => {
+      this.selectedIndex = MODES.length;
+      this.confirmSelection();
+    });
 
     // Footer
-    this.add.text(centerX, CANVAS_HEIGHT - 60, 'Tap a mode to begin', {
+    this.add.text(centerX, CANVAS_HEIGHT - 60, 'Use arrows to select, space to confirm', {
       fontSize: '18px',
       fontFamily: 'Arial',
       color: '#888888',
     }).setOrigin(0.5);
+
+    // Keyboard input
+    if (this.input.keyboard) {
+      this.cursors = this.input.keyboard.createCursorKeys();
+      this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    }
+
+    this.updateHighlight();
+  }
+
+  update(_time: number, delta: number): void {
+    this.moveTimer += delta;
+    if (this.moveTimer < this.MOVE_MS) return;
+
+    if (!this.cursors) return;
+
+    const totalItems = MODES.length + 1; // modes + debug
+
+    if (this.cursors.up.isDown) {
+      this.moveTimer = 0;
+      this.selectedIndex = (this.selectedIndex - 1 + totalItems) % totalItems;
+      this.updateHighlight();
+    } else if (this.cursors.down.isDown) {
+      this.moveTimer = 0;
+      this.selectedIndex = (this.selectedIndex + 1) % totalItems;
+      this.updateHighlight();
+    }
+
+    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      this.confirmSelection();
+    }
+  }
+
+  private updateHighlight(): void {
+    for (let i = 0; i < this.btnBgs.length; i++) {
+      const isDebug = i === MODES.length;
+      if (i === this.selectedIndex) {
+        this.btnBgs[i].setFillStyle(0x1e3a5f);
+        this.btnBgs[i].setStrokeStyle(isDebug ? 1 : 2, 0x00ff88);
+        this.btnLabels[i].setColor('#ffd700');
+      } else {
+        this.btnBgs[i].setFillStyle(isDebug ? 0x1a1a1a : COLOR_CELL);
+        this.btnBgs[i].setStrokeStyle(isDebug ? 1 : 2, isDebug ? 0x555555 : 0xffd700);
+        this.btnLabels[i].setColor(isDebug ? '#555555' : '#ffffff');
+      }
+    }
+  }
+
+  private confirmSelection(): void {
+    if (this.selectedIndex < MODES.length) {
+      this.scene.start('CharacterSelect', { mode: MODES[this.selectedIndex].mode });
+    } else {
+      this.scene.start('Debug');
+    }
   }
 }

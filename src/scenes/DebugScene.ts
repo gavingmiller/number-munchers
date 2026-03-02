@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
-import type { GameState, TroggleType } from '../types';
-import { createLevelState, applyTroggleTick } from '../game/state/GameState';
+import type { GameState, TroggleType, Direction } from '../types';
+import { createLevelState, applyMove, applyTroggleTick } from '../game/state/GameState';
+import { checkPlayerTroggles } from '../game/logic/CollisionSystem';
 import { createTroggle } from '../game/entities/Troggle';
 import { GridRenderer } from '../ui/GridRenderer';
 import { HUD } from '../ui/HUD';
 import { RuleBanner } from '../ui/RuleBanner';
 import { DebugOverlay } from '../ui/DebugOverlay';
-import { CANVAS_WIDTH, GRID_Y, GRID_H, TROGGLE_COLORS } from '../constants';
+import { CANVAS_WIDTH, GRID_Y, GRID_H, HUD_Y, HUD_H, TROGGLE_COLORS, PLAYER_MOVE_MS } from '../constants';
 
 // Match production speed (100ms per tick)
 const DEBUG_TICK_MS = 100;
@@ -30,7 +31,12 @@ export class DebugScene extends Phaser.Scene {
   private hud!: HUD;
   private ruleBanner!: RuleBanner;
   private debugOverlay!: DebugOverlay;
+  private hitText!: Phaser.GameObjects.Text;
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
+  private moveTimer = 0;
+  private hitTimer = 0;
   private gameTickTimer = 0;
+  private readonly HIT_DISPLAY_MS = 300;
 
   constructor() {
     super({ key: 'Debug' });
@@ -63,7 +69,7 @@ export class DebugScene extends Phaser.Scene {
     this.ruleBanner.create(this.state);
 
     this.hud = new HUD(this);
-    this.hud.create(this.state);
+    this.hud.create(this.state, false); // no hearts in debug
 
     this.gridRenderer = new GridRenderer(this);
     this.gridRenderer.create(this.state);
@@ -71,18 +77,49 @@ export class DebugScene extends Phaser.Scene {
     this.debugOverlay = new DebugOverlay(this);
     this.debugOverlay.create(this.state);
 
-    // Legend in the DPad zone (below grid) — no DPad in debug mode
-    this.buildLegend();
-
-    // SPACE exits to main menu
+    // Keyboard: cursor keys move player, SPACE exits
     if (this.input.keyboard) {
+      this.cursors = this.input.keyboard.createCursorKeys();
       this.input.keyboard
         .addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
         .on('down', () => { this.scene.start('MainMenu'); });
     }
+
+    // HIT flash text — sits where hearts would be in the HUD
+    this.hitText = this.add.text(CANVAS_WIDTH - 20, HUD_Y + HUD_H / 2, 'HIT', {
+      fontSize: '28px',
+      fontFamily: 'Arial',
+      color: '#ff2222',
+      fontStyle: 'bold',
+    }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(20).setVisible(false);
+
+    // Legend below grid
+    this.buildLegend();
   }
 
   update(_time: number, delta: number): void {
+    // HIT flash countdown
+    if (this.hitTimer > 0) {
+      this.hitTimer -= delta;
+      if (this.hitTimer <= 0) {
+        this.hitText.setVisible(false);
+      }
+    }
+
+    // Keyboard movement with throttle (no munch)
+    this.moveTimer += delta;
+    if (this.moveTimer >= PLAYER_MOVE_MS) {
+      const dir = this.readKeyboardDirection();
+      if (dir) {
+        this.state = applyMove(this.state, dir);
+        this.gridRenderer.update(this.state);
+        this.hud.update(this.state);
+        this.debugOverlay.update(this.state);
+        this.moveTimer = 0;
+        this.checkHit();
+      }
+    }
+
     this.gameTickTimer += delta;
     if (this.gameTickTimer >= DEBUG_TICK_MS) {
       this.gameTickTimer -= DEBUG_TICK_MS;
@@ -99,7 +136,25 @@ export class DebugScene extends Phaser.Scene {
       this.gridRenderer.update(this.state);
       this.hud.update(this.state);
       this.debugOverlay.update(this.state);
+      this.checkHit();
     }
+  }
+
+  private checkHit(): void {
+    const result = checkPlayerTroggles(this.state);
+    if (result.type === 'troggle-hit') {
+      this.hitText.setVisible(true);
+      this.hitTimer = this.HIT_DISPLAY_MS;
+    }
+  }
+
+  private readKeyboardDirection(): Direction | null {
+    if (!this.cursors) return null;
+    if (this.cursors.up.isDown) return 'up';
+    if (this.cursors.down.isDown) return 'down';
+    if (this.cursors.left.isDown) return 'left';
+    if (this.cursors.right.isDown) return 'right';
+    return null;
   }
 
   private buildLegend(): void {

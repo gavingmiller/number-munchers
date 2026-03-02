@@ -11,11 +11,11 @@ describe('generateGrid', () => {
     expect(grid).toHaveLength(30);
   });
 
-  it('has between 3 and 8 correct cells', () => {
+  it('has 67-75% correct cells (20-23 of 30)', () => {
     const grid = generateGrid(rule, config);
     const correctCount = grid.filter((c) => c.isCorrect).length;
-    expect(correctCount).toBeGreaterThanOrEqual(3);
-    expect(correctCount).toBeLessThanOrEqual(8);
+    expect(correctCount).toBeGreaterThanOrEqual(19);
+    expect(correctCount).toBeLessThanOrEqual(23);
   });
 
   it('all cells have valid row (0-5) and col (0-4)', () => {

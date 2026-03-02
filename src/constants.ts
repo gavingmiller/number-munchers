@@ -1,6 +1,9 @@
 // ============================================================
 // Visual constants — used by Phaser scenes only.
 // Keep game logic constants in src/types.ts
+//
+// RULE: All views must be fully navigable with d-pad (arrow keys)
+// + space bar. A mouse/touch is never required on any screen.
 // ============================================================
 
 // Canvas

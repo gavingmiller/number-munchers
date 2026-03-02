@@ -1,21 +1,24 @@
 import Phaser from 'phaser';
-import type { GameState, TroggleData } from '../types';
+import type { GameState, TroggleData, CharacterType } from '../types';
 import { ROWS, COLS, cellIndex } from '../types';
 import {
   GRID_Y, CELL_W, CELL_H,
   COLOR_CELL, COLOR_CELL_BORDER, COLOR_CELL_TEXT,
-  COLOR_PLAYER, TROGGLE_COLORS,
+  TROGGLE_COLORS,
 } from '../constants';
+import { drawCharacter } from './CharacterSprites';
 
 export class GridRenderer {
   private scene: Phaser.Scene;
+  private character: CharacterType;
   private cellBgs: Phaser.GameObjects.Rectangle[][] = [];
   private cellTexts: Phaser.GameObjects.Text[][] = [];
-  private playerSprite!: Phaser.GameObjects.Rectangle;
+  private playerContainer!: Phaser.GameObjects.Container;
   private troggleSprites: Map<string, Phaser.GameObjects.Rectangle> = new Map();
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, character: CharacterType = 'box') {
     this.scene = scene;
+    this.character = character;
   }
 
   create(state: GameState): void {
@@ -46,32 +49,42 @@ export class GridRenderer {
     // Player sprite
     const px = this.cellX(state.player.col);
     const py = this.cellY(state.player.row);
-    this.playerSprite = this.scene.add.rectangle(px, py, CELL_W - 20, CELL_H - 20, COLOR_PLAYER, 0.6)
-      .setStrokeStyle(2, COLOR_PLAYER);
-    this.playerSprite.setDepth(5);
+    this.playerContainer = this.createPlayerSprite(px, py);
+    this.playerContainer.setDepth(5);
 
     // Troggle sprites
     this.syncTroggles(state.troggles);
   }
 
   update(state: GameState): void {
-    // Update cell contents
+    // Update cell contents — show all first
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const cell = state.grid[cellIndex(r, c)];
         const displayValue = cell.state === 'filled' ? String(cell.value) : '';
         this.cellTexts[r][c].setText(displayValue);
+        this.cellTexts[r][c].setVisible(true);
       }
     }
 
     // Update player position
-    this.playerSprite.setPosition(
+    this.playerContainer.setPosition(
       this.cellX(state.player.col),
       this.cellY(state.player.row),
     );
 
     // Update troggles
     this.syncTroggles(state.troggles);
+
+    // Hide text under player
+    this.cellTexts[state.player.row]?.[state.player.col]?.setVisible(false);
+
+    // Hide text under active troggles
+    for (const t of state.troggles) {
+      if (t.row >= 0 && t.row < ROWS && t.col >= 0 && t.col < COLS) {
+        this.cellTexts[t.row]?.[t.col]?.setVisible(false);
+      }
+    }
   }
 
   flashCell(row: number, col: number, color: number, durationMs: number): void {
@@ -84,6 +97,12 @@ export class GridRenderer {
     this.scene.time.delayedCall(durationMs, () => {
       bg.setFillStyle(original);
     });
+  }
+
+  private createPlayerSprite(x: number, y: number): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(x, y);
+    drawCharacter(this.scene, container, this.character, 4);
+    return container;
   }
 
   private syncTroggles(troggles: TroggleData[]): void {

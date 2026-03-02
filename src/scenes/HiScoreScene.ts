@@ -7,6 +7,7 @@ interface HiScoreData {
 
 export class HiScoreScene extends Phaser.Scene {
   private finalScore = 0;
+  private spaceKey?: Phaser.Input.Keyboard.Key;
 
   constructor() {
     super({ key: 'HiScore' });
@@ -47,34 +48,42 @@ export class HiScoreScene extends Phaser.Scene {
       color: '#ffffff',
     }).setOrigin(0.5);
 
-    // Play Again button
+    // Play Again button — highlighted by default
     const btnW = 280;
     const btnH = 64;
     const btnY = 550;
 
-    const bg = this.add.rectangle(cx, btnY, btnW, btnH, COLOR_CELL)
-      .setStrokeStyle(2, 0xffd700)
+    const bg = this.add.rectangle(cx, btnY, btnW, btnH, 0x1e3a5f)
+      .setStrokeStyle(2, 0x00ff88)
       .setInteractive({ useHandCursor: true });
 
-    const label = this.add.text(cx, btnY, 'Play Again', {
+    this.add.text(cx, btnY, 'Play Again', {
       fontSize: '30px',
       fontFamily: 'Arial',
-      color: '#ffffff',
+      color: '#ffd700',
       fontStyle: 'bold',
     }).setOrigin(0.5);
-
-    bg.on('pointerover', () => {
-      bg.setFillStyle(0x1e3a5f);
-      label.setColor('#ffd700');
-    });
-
-    bg.on('pointerout', () => {
-      bg.setFillStyle(COLOR_CELL);
-      label.setColor('#ffffff');
-    });
 
     bg.on('pointerdown', () => {
       this.scene.start('MainMenu');
     });
+
+    // Footer
+    this.add.text(cx, btnY + 60, 'Press space to continue', {
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      color: '#888888',
+    }).setOrigin(0.5);
+
+    // Keyboard
+    if (this.input.keyboard) {
+      this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    }
+  }
+
+  update(): void {
+    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      this.scene.start('MainMenu');
+    }
   }
 }

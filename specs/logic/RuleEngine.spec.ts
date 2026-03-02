@@ -57,6 +57,6 @@ describe('generateRule', () => {
     const rule = generateRule('equalities', 2);
     expect(rule.mode).toBe('equalities');
     expect(rule.target).toBeDefined();
-    expect(rule.description).toMatch(/^Equal to \d+$/);
+    expect(rule.description).toMatch(/^Equals \d+$/);
   });
 });

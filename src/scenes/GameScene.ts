@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { GameState, Direction, GameMode, ScoreData } from '../types';
+import type { GameState, Direction, GameMode, ScoreData, CharacterType } from '../types';
 import { createLevelState, applyMove, applyMunch, applyTroggleHit, applyTroggleTick } from '../game/state/GameState';
 import { checkPlayerCell, checkPlayerTroggles } from '../game/logic/CollisionSystem';
 import { GridRenderer } from '../ui/GridRenderer';
@@ -19,6 +19,7 @@ interface GameSceneData {
   mode: GameMode;
   level?: number;
   score?: ScoreData;
+  character?: CharacterType;
 }
 
 export class GameScene extends Phaser.Scene {
@@ -44,6 +45,7 @@ export class GameScene extends Phaser.Scene {
       mode: data.mode ?? 'multiples',
       level: data.level ?? 1,
       score: data.score,
+      character: data.character ?? 'box',
     };
   }
 
@@ -60,7 +62,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = new HUD(this);
     this.hud.create(this.state);
 
-    this.gridRenderer = new GridRenderer(this);
+    this.gridRenderer = new GridRenderer(this, this.sceneData.character ?? 'box');
     this.gridRenderer.create(this.state);
 
     this.debugOverlay = new DebugOverlay(this);
@@ -220,6 +222,7 @@ export class GameScene extends Phaser.Scene {
       mode: this.state.mode,
       level: nextLevel,
       score: this.state.score,
+      character: this.sceneData.character,
     });
   }
 }

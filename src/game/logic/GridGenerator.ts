@@ -1,15 +1,84 @@
 import type { CellData, Rule } from '../../types.ts';
 import { ROWS, COLS } from '../../types.ts';
-import { isCorrect } from './RuleEngine.ts';
-import { shuffle } from './MathUtils.ts';
+import { isCorrect, generateEquation, generateWrongEquation } from './RuleEngine.ts';
+import { randomInt, shuffle } from './MathUtils.ts';
 
 export function generateGrid(
   rule: Rule,
   config: { numberRangeMin: number; numberRangeMax: number },
 ): CellData[] {
+  const totalCells = ROWS * COLS; // 30
+
+  // Target: 67-75% of cells are correct (20-22 out of 30)
+  const correctPercent = randomInt(67, 75) / 100;
+  const targetCorrectCount = Math.round(totalCells * correctPercent);
+
+  if (rule.mode === 'equalities') {
+    return generateEqualitiesGrid(rule, totalCells, targetCorrectCount);
+  }
+
+  return generateNumberGrid(rule, config, totalCells, targetCorrectCount);
+}
+
+/** Generate grid for equalities mode using equation strings. */
+function generateEqualitiesGrid(
+  rule: Rule,
+  totalCells: number,
+  targetCorrectCount: number,
+): CellData[] {
+  const target = rule.target!;
+
+  const allValues: { value: string; isCorrect: boolean }[] = [];
+
+  // Generate correct equations
+  const usedCorrect = new Set<string>();
+  for (let i = 0; i < targetCorrectCount; i++) {
+    let eq = generateEquation(target);
+    // Try to avoid too many duplicates
+    let attempts = 0;
+    while (usedCorrect.has(eq) && attempts < 10) {
+      eq = generateEquation(target);
+      attempts++;
+    }
+    usedCorrect.add(eq);
+    allValues.push({ value: eq, isCorrect: true });
+  }
+
+  // Generate incorrect equations
+  const incorrectCount = totalCells - targetCorrectCount;
+  for (let i = 0; i < incorrectCount; i++) {
+    allValues.push({ value: generateWrongEquation(target), isCorrect: false });
+  }
+
+  const shuffled = shuffle(allValues);
+
+  const cells: CellData[] = [];
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const idx = row * COLS + col;
+      const entry = shuffled[idx];
+      cells.push({
+        row,
+        col,
+        value: entry.value,
+        state: 'filled',
+        isCorrect: entry.isCorrect,
+      });
+    }
+  }
+
+  return cells;
+}
+
+/** Generate grid for number-based modes (multiples, factors, primes). */
+function generateNumberGrid(
+  rule: Rule,
+  config: { numberRangeMin: number; numberRangeMax: number },
+  totalCells: number,
+  targetCorrectCount: number,
+): CellData[] {
   const { numberRangeMin, numberRangeMax } = config;
 
-  // Collect all correct candidates in range
   const correctCandidates: number[] = [];
   const incorrectCandidates: number[] = [];
 
@@ -21,16 +90,17 @@ export function generateGrid(
     }
   }
 
-  // Pick 3-8 correct values
-  const correctCount = Math.min(
-    Math.max(3, Math.min(correctCandidates.length, 8)),
-    correctCandidates.length,
-  );
+  // Allow repeats to reach the target count; ranges expand via DifficultyTable at higher levels
+  const correctCount = correctCandidates.length > 0 ? targetCorrectCount : 0;
   const shuffledCorrect = shuffle(correctCandidates);
-  const chosenCorrect = shuffledCorrect.slice(0, correctCount);
+
+  const chosenCorrect: number[] = [];
+  for (let i = 0; i < correctCount; i++) {
+    chosenCorrect.push(shuffledCorrect[i % shuffledCorrect.length]);
+  }
 
   // Fill the rest with incorrect values
-  const incorrectCount = ROWS * COLS - correctCount;
+  const incorrectCount = totalCells - correctCount;
   const shuffledIncorrect = shuffle(incorrectCandidates);
 
   const chosenIncorrect: number[] = [];
@@ -38,7 +108,6 @@ export function generateGrid(
     chosenIncorrect.push(shuffledIncorrect[i % shuffledIncorrect.length]);
   }
 
-  // Build all values and shuffle positions
   const allValues: { value: number; isCorrect: boolean }[] = [
     ...chosenCorrect.map((v) => ({ value: v, isCorrect: true })),
     ...chosenIncorrect.map((v) => ({ value: v, isCorrect: false })),
@@ -46,7 +115,6 @@ export function generateGrid(
 
   const shuffledValues = shuffle(allValues);
 
-  // Assign to grid positions
   const cells: CellData[] = [];
   for (let row = 0; row < ROWS; row++) {
     for (let col = 0; col < COLS; col++) {
