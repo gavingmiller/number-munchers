@@ -72,23 +72,23 @@ describe('nextMove', () => {
     expect(dir).toBe('right');
   });
 
-  it('bashful moves away from player when distance < 3', () => {
-    // Bashful at (3,2), player at (3,3) — distance 1, should move left (away)
-    const troggle = createTroggle('t1', 'bashful', 3, 2, 10);
+  it('squirt moves away from player when distance < 3', () => {
+    // Squirt at (3,2), player at (3,3) — distance 1, should move left (away)
+    const troggle = createTroggle('t1', 'squirt', 3, 2, 10);
     const dir = nextMove(troggle, player, emptyGrid);
     expect(dir).toBe('left');
   });
 
-  it('bashful moves away when adjacent diagonally', () => {
-    // Bashful at (2,2), player at (3,3) — distance 2, should flee (up or left)
-    const troggle = createTroggle('t1', 'bashful', 2, 2, 10);
+  it('squirt moves away when adjacent diagonally', () => {
+    // Squirt at (2,2), player at (3,3) — distance 2, should flee (up or left)
+    const troggle = createTroggle('t1', 'squirt', 2, 2, 10);
     const dir = nextMove(troggle, player, emptyGrid);
     expect(['up', 'left']).toContain(dir);
   });
 
-  it('bashful moves randomly when far from player', () => {
-    // Bashful at (0,0), player at (3,3) — distance 6, random move
-    const troggle = createTroggle('t1', 'bashful', 0, 0, 10);
+  it('squirt moves randomly when far from player', () => {
+    // Squirt at (0,0), player at (3,3) — distance 6, random move
+    const troggle = createTroggle('t1', 'squirt', 0, 0, 10);
     const dir = nextMove(troggle, player, emptyGrid);
     // At (0,0) only valid dirs are down and right
     expect(['down', 'right']).toContain(dir);

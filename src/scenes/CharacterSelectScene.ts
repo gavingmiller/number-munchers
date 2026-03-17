@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { GameMode, CharacterType } from '../types';
+import type { GameMode, GradeLevel, CharacterType } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { drawCharacter } from '../ui/CharacterSprites';
 
@@ -7,6 +7,7 @@ import { drawCharacter } from '../ui/CharacterSprites';
 
 interface CharSelectData {
   mode: GameMode;
+  grade?: GradeLevel;
 }
 
 interface CharOption {
@@ -30,6 +31,7 @@ const GRID_COLS = 3;
 
 export class CharacterSelectScene extends Phaser.Scene {
   private selectedMode!: GameMode;
+  private selectedGrade!: GradeLevel;
   private selectedIndex = 0;
   private cardBgs: Phaser.GameObjects.Rectangle[] = [];
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -43,6 +45,7 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   init(data: CharSelectData): void {
     this.selectedMode = data.mode ?? 'multiples';
+    this.selectedGrade = data.grade ?? ((Number(localStorage.getItem('numberMunchers_grade')) || 4) as GradeLevel);
     this.selectedIndex = 0;
     this.cardBgs = [];
   }
@@ -160,7 +163,7 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   private confirmSelection(): void {
     const character = CHARACTERS[this.selectedIndex].type;
-    this.scene.start('Game', { mode: this.selectedMode, character });
+    this.scene.start('Game', { mode: this.selectedMode, character, grade: this.selectedGrade });
   }
 
   private createCharacterCard(

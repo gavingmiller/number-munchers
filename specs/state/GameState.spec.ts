@@ -79,6 +79,40 @@ describe('createLevelState', () => {
     const state = createLevelState('multiples', 1);
     expect(state.status).toBe('playing');
   });
+
+  it('defaults to grade 4 when no grade provided', () => {
+    const state = createLevelState('multiples', 1);
+    expect(state.grade).toBe(4);
+  });
+
+  it('accepts explicit grade parameter', () => {
+    const state = createLevelState('sums', 1, undefined, 1);
+    expect(state.grade).toBe(1);
+    expect(state.mode).toBe('sums');
+  });
+
+  it('grade 1 sums generates valid grid', () => {
+    const state = createLevelState('sums', 1, undefined, 1);
+    expect(state.grid).toHaveLength(30);
+    expect(state.rule.mode).toBe('sums');
+    expect(state.rule.target).toBeDefined();
+  });
+
+  it('grade 2 even_odd generates valid grid', () => {
+    const state = createLevelState('even_odd', 1, undefined, 2);
+    expect(state.grid).toHaveLength(30);
+    expect(state.rule.mode).toBe('even_odd');
+    expect(state.rule.parity).toMatch(/^(even|odd)$/);
+  });
+
+  it('grade 1 missing_addends generates valid grid', () => {
+    const state = createLevelState('missing_addends', 1, undefined, 1);
+    expect(state.grid).toHaveLength(30);
+    expect(state.rule.mode).toBe('missing_addends');
+    for (const cell of state.grid) {
+      expect(typeof cell.value).toBe('string');
+    }
+  });
 });
 
 describe('applyMove', () => {

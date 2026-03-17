@@ -41,4 +41,41 @@ describe('generateGrid', () => {
       expect(cell.state).toBe('filled');
     }
   });
+
+  it('even_odd grid has correct parity distribution', () => {
+    const evenRule: Rule = { mode: 'even_odd', parity: 'even', description: 'Even Numbers' };
+    const grid = generateGrid(evenRule, { numberRangeMin: 1, numberRangeMax: 100 });
+    expect(grid).toHaveLength(30);
+    const correctCells = grid.filter((c) => c.isCorrect);
+    // 67-75% correct
+    expect(correctCells.length).toBeGreaterThanOrEqual(19);
+    expect(correctCells.length).toBeLessThanOrEqual(23);
+    // All correct cells should be even numbers
+    for (const cell of correctCells) {
+      expect((cell.value as number) % 2).toBe(0);
+    }
+  });
+
+  it('missing_addends grid produces equation strings with underscores', () => {
+    const maRule: Rule = { mode: 'missing_addends', target: 5, description: 'Missing number is 5' };
+    const grid = generateGrid(maRule, { numberRangeMin: 1, numberRangeMax: 20 }, 1);
+    expect(grid).toHaveLength(30);
+    for (const cell of grid) {
+      expect(typeof cell.value).toBe('string');
+      expect(cell.value as string).toContain('_');
+    }
+    const correctCells = grid.filter((c) => c.isCorrect);
+    expect(correctCells.length).toBeGreaterThanOrEqual(19);
+    expect(correctCells.length).toBeLessThanOrEqual(23);
+  });
+
+  it('sums grid produces equation strings', () => {
+    const sumsRule: Rule = { mode: 'sums', target: 10, description: 'Equals 10' };
+    const grid = generateGrid(sumsRule, { numberRangeMin: 1, numberRangeMax: 20 }, 1);
+    expect(grid).toHaveLength(30);
+    for (const cell of grid) {
+      expect(typeof cell.value).toBe('string');
+      expect(cell.value as string).toContain('+');
+    }
+  });
 });

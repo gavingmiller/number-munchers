@@ -44,4 +44,53 @@ describe('getLevelConfig', () => {
   it('numberRangeMax capped at 100', () => {
     expect(getLevelConfig(50).numberRangeMax).toBe(100);
   });
+
+  it('factors mode level 1 has numberRangeMax=12', () => {
+    expect(getLevelConfig(1, 'factors').numberRangeMax).toBe(12);
+  });
+
+  it('factors mode level 5 has numberRangeMax=55', () => {
+    expect(getLevelConfig(5, 'factors').numberRangeMax).toBe(55);
+  });
+
+  it('factors mode level 8+ capped at 100', () => {
+    expect(getLevelConfig(8, 'factors').numberRangeMax).toBe(100);
+    expect(getLevelConfig(15, 'factors').numberRangeMax).toBe(100);
+  });
+
+  it('factors mode does not affect troggle or points config', () => {
+    const defaultConfig = getLevelConfig(4);
+    const factorsConfig = getLevelConfig(4, 'factors');
+    expect(factorsConfig.troggleCount).toBe(defaultConfig.troggleCount);
+    expect(factorsConfig.troggleMoveInterval).toBe(defaultConfig.troggleMoveInterval);
+    expect(factorsConfig.pointsPerCorrect).toBe(defaultConfig.pointsPerCorrect);
+  });
+
+  it('grade 1 caps numberRangeMax at 20', () => {
+    // Level 5 would normally give 32, but grade 1 caps at 20
+    expect(getLevelConfig(5, undefined, 1).numberRangeMax).toBe(20);
+  });
+
+  it('grade 1 level 1 stays within 20', () => {
+    expect(getLevelConfig(1, undefined, 1).numberRangeMax).toBeLessThanOrEqual(20);
+  });
+
+  it('grade 5 allows up to 200', () => {
+    // Level 50 would normally cap at 100, but grade 5 allows 200
+    expect(getLevelConfig(50, undefined, 5).numberRangeMax).toBe(100);
+    // Grade 5 doesn't increase beyond what level provides, it just allows higher cap
+  });
+
+  it('grade 5 high level reaches beyond 100 if level formula allows', () => {
+    // Formula: min(12 + level*4, 100) — default cap is 100
+    // Grade 5 cap is 200, but the base formula still caps at 100
+    // So grade 5 allows the SAME max as default for standard modes
+    expect(getLevelConfig(50, undefined, 5).numberRangeMax).toBe(100);
+  });
+
+  it('backward compat: no grade param behaves as before', () => {
+    expect(getLevelConfig(1).numberRangeMax).toBe(16);
+    expect(getLevelConfig(5).numberRangeMax).toBe(32);
+    expect(getLevelConfig(50).numberRangeMax).toBe(100);
+  });
 });

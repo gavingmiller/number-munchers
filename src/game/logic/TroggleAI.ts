@@ -77,7 +77,7 @@ export function nextMove(
       return randomDirection(valid);
     }
 
-    case 'bashful': {
+    case 'squirt': {
       // Move away if close (distance < 3), otherwise random
       const dist = distanceBetween(
         troggle.row,

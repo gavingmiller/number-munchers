@@ -1,6 +1,27 @@
-import type { LevelConfig } from '../../types.ts';
+import type { LevelConfig, GameMode, GradeLevel } from '../../types.ts';
 
-export function getLevelConfig(level: number): LevelConfig {
+/** Board number range caps for Factors mode, indexed by level (1-based). */
+export const FACTORS_BOARD_RANGE: Record<number, number> = {
+  1: 12,
+  2: 18,
+  3: 28,
+  4: 40,
+  5: 55,
+  6: 70,
+  7: 85,
+  8: 100,
+};
+
+/** Grade-based max number range caps. */
+const GRADE_RANGE_CAP: Record<GradeLevel, number> = {
+  1: 20,
+  2: 100,
+  3: 100,
+  4: 100,
+  5: 200,
+};
+
+export function getLevelConfig(level: number, mode?: GameMode, grade?: GradeLevel): LevelConfig {
   let troggleCount: number;
   let troggleMoveInterval: number;
 
@@ -17,7 +38,22 @@ export function getLevelConfig(level: number): LevelConfig {
 
   const pointsPerCorrect = Math.min(5 + (level - 1) * 5, 75);
   const numberRangeMin = 1;
-  const numberRangeMax = Math.min(12 + level * 4, 100);
+
+  let numberRangeMax: number;
+  if (mode === 'factors') {
+    const maxRangeLevel = Math.max(...Object.keys(FACTORS_BOARD_RANGE).map(Number));
+    const rangeLevel = Math.min(level, maxRangeLevel);
+    numberRangeMax = FACTORS_BOARD_RANGE[rangeLevel];
+  } else {
+    const defaultCap = 100;
+    numberRangeMax = Math.min(12 + level * 4, defaultCap);
+  }
+
+  // Apply grade-based cap if provided
+  if (grade) {
+    const gradeCap = GRADE_RANGE_CAP[grade];
+    numberRangeMax = Math.min(numberRangeMax, gradeCap);
+  }
 
   return {
     level,

@@ -2,16 +2,18 @@
 // Shared types — NO Phaser imports. Used by both game/ and scenes/.
 // ============================================================
 
-export type GameMode = 'multiples' | 'factors' | 'primes' | 'equalities';
+export type GameMode = 'sums' | 'missing_addends' | 'even_odd' | 'multiples' | 'factors' | 'primes' | 'equalities';
+export type GradeLevel = 1 | 2 | 3 | 4 | 5;
 export type CharacterType = 'claude' | 'box' | 'axolotl' | 'electricmouse' | 'marshmallow' | 'robot' | 'nyancat' | 'pusheen' | 'mrpickle';
-export type TroggleType = 'reggie' | 'fangs' | 'bashful' | 'ember' | 'bonehead';
+export type TroggleType = 'reggie' | 'fangs' | 'squirt' | 'ember' | 'bonehead';
 export type CellState = 'filled' | 'blank';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type GameStatus = 'playing' | 'life-lost' | 'level-complete' | 'game-over' | 'cutscene';
 
 export interface Rule {
   mode: GameMode;
-  target?: number; // used by multiples, factors, equalities
+  target?: number; // used by multiples, factors, equalities, sums, missing_addends
+  parity?: 'even' | 'odd'; // used by even_odd mode
   description: string; // e.g. "Multiples of 6"
 }
 
@@ -49,6 +51,7 @@ export interface ScoreData {
 
 export interface GameState {
   mode: GameMode;
+  grade: GradeLevel;
   level: number;
   status: GameStatus;
   score: ScoreData;

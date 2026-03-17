@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
+import { GradeSelectScene } from './scenes/GradeSelectScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
@@ -18,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MainMenuScene, CharacterSelectScene, GameScene, GameOverScene, CutsceneScene, HiScoreScene, DebugScene],
+  scene: [BootScene, GradeSelectScene, MainMenuScene, CharacterSelectScene, GameScene, GameOverScene, CutsceneScene, HiScoreScene, DebugScene],
   input: {
     activePointers: 4,
   },

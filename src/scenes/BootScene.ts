@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { GradeLevel } from '../types';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +11,12 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('MainMenu');
+    const savedGrade = localStorage.getItem('numberMunchers_grade');
+    if (savedGrade) {
+      const grade = Number(savedGrade) as GradeLevel;
+      this.scene.start('MainMenu', { grade });
+    } else {
+      this.scene.start('GradeSelect');
+    }
   }
 }

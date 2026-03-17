@@ -16,6 +16,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
 
   return {
     mode: 'multiples',
+    grade: 4,
     level: 1,
     status: 'playing',
     score: { current: 0, extraLifeThresholds: [1000, 10000], pointsPerCorrect: 5 },

@@ -42,7 +42,7 @@ export const COLOR_CELL_TEXT = '#e0e0e0';
 export const TROGGLE_COLORS: Record<string, number> = {
   reggie: 0xcc4444,
   fangs: 0x44aacc,
-  bashful: 0xcc8844,
+  squirt: 0x3b7bbf,
   ember: 0xf48c06,
   bonehead: 0x6b6b7a,
 };

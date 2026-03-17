@@ -1,21 +1,21 @@
 import Phaser from 'phaser';
-import type { GameMode } from '../types';
+import type { GameMode, GradeLevel } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
+import { getModesForGrade, MODE_LABELS, GRADE_CONFIG } from '../game/logic/GradeConfig';
 
 interface ModeOption {
   label: string;
   mode: GameMode;
 }
 
-const MODES: ModeOption[] = [
-  { label: 'Multiples', mode: 'multiples' },
-  { label: 'Factors', mode: 'factors' },
-  { label: 'Prime Numbers', mode: 'primes' },
-  { label: 'Equalities', mode: 'equalities' },
-];
+interface MainMenuData {
+  grade?: GradeLevel;
+}
 
 export class MainMenuScene extends Phaser.Scene {
   private selectedIndex = 0;
+  private modes: ModeOption[] = [];
+  private grade: GradeLevel = 4;
   private btnBgs: Phaser.GameObjects.Rectangle[] = [];
   private btnLabels: Phaser.GameObjects.Text[] = [];
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -27,6 +27,14 @@ export class MainMenuScene extends Phaser.Scene {
     super({ key: 'MainMenu' });
   }
 
+  init(data: MainMenuData): void {
+    this.grade = data.grade ?? ((Number(localStorage.getItem('numberMunchers_grade')) || 4) as GradeLevel);
+    this.modes = getModesForGrade(this.grade).map((mode) => ({
+      label: MODE_LABELS[mode],
+      mode,
+    }));
+  }
+
   create(): void {
     this.selectedIndex = 0;
     this.btnBgs = [];
@@ -35,7 +43,7 @@ export class MainMenuScene extends Phaser.Scene {
     const centerX = CANVAS_WIDTH / 2;
 
     // Title
-    this.add.text(centerX, 180, 'NUMBER\nMUNCHERS', {
+    this.add.text(centerX, 140, 'NUMBER\nMUNCHERS', {
       fontSize: '72px',
       fontFamily: 'Arial',
       color: '#ffd700',
@@ -43,8 +51,8 @@ export class MainMenuScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
-    // Subtitle
-    this.add.text(centerX, 310, 'Choose a game mode', {
+    // Grade indicator + subtitle
+    this.add.text(centerX, 280, `${GRADE_CONFIG[this.grade].label} — Choose a game mode`, {
       fontSize: '24px',
       fontFamily: 'Arial',
       color: '#ffffff',
@@ -54,11 +62,11 @@ export class MainMenuScene extends Phaser.Scene {
     // Mode buttons
     const btnW = 360;
     const btnH = 64;
-    const startY = 400;
+    const startY = 370;
     const gap = 80;
 
-    for (let i = 0; i < MODES.length; i++) {
-      const opt = MODES[i];
+    for (let i = 0; i < this.modes.length; i++) {
+      const opt = this.modes[i];
       const y = startY + i * gap;
 
       const bg = this.add.rectangle(centerX, y, btnW, btnH, COLOR_CELL)
@@ -86,8 +94,32 @@ export class MainMenuScene extends Phaser.Scene {
       });
     }
 
+    // Change Grade button
+    const changeGradeY = startY + this.modes.length * gap + 10;
+    const changeGradeBg = this.add.rectangle(centerX, changeGradeY, btnW, btnH * 0.75, 0x1a1a1a)
+      .setStrokeStyle(1, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    const changeGradeLabel = this.add.text(centerX, changeGradeY, 'Change Grade', {
+      fontSize: '20px',
+      fontFamily: 'Arial',
+      color: '#aaaaaa',
+    }).setOrigin(0.5);
+
+    this.btnBgs.push(changeGradeBg);
+    this.btnLabels.push(changeGradeLabel);
+
+    const changeGradeIdx = this.modes.length;
+    changeGradeBg.on('pointerover', () => {
+      this.selectedIndex = changeGradeIdx;
+      this.updateHighlight();
+    });
+    changeGradeBg.on('pointerdown', () => {
+      this.selectedIndex = changeGradeIdx;
+      this.confirmSelection();
+    });
+
     // Debug button
-    const debugY = startY + MODES.length * gap + 20;
+    const debugY = changeGradeY + gap * 0.75;
     const debugBg = this.add.rectangle(centerX, debugY, btnW, btnH * 0.75, 0x1a1a1a)
       .setStrokeStyle(1, 0x555555)
       .setInteractive({ useHandCursor: true });
@@ -100,12 +132,13 @@ export class MainMenuScene extends Phaser.Scene {
     this.btnBgs.push(debugBg);
     this.btnLabels.push(debugLabel);
 
+    const debugIdx = this.modes.length + 1;
     debugBg.on('pointerover', () => {
-      this.selectedIndex = MODES.length;
+      this.selectedIndex = debugIdx;
       this.updateHighlight();
     });
     debugBg.on('pointerdown', () => {
-      this.selectedIndex = MODES.length;
+      this.selectedIndex = debugIdx;
       this.confirmSelection();
     });
 
@@ -131,7 +164,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     if (!this.cursors) return;
 
-    const totalItems = MODES.length + 1; // modes + debug
+    const totalItems = this.modes.length + 2; // modes + change grade + debug
 
     if (this.cursors.up.isDown) {
       this.moveTimer = 0;
@@ -149,23 +182,31 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private updateHighlight(): void {
+    const changeGradeIdx = this.modes.length;
+    const debugIdx = this.modes.length + 1;
+
     for (let i = 0; i < this.btnBgs.length; i++) {
-      const isDebug = i === MODES.length;
+      const isSpecial = i >= changeGradeIdx;
+      const isDebug = i === debugIdx;
       if (i === this.selectedIndex) {
         this.btnBgs[i].setFillStyle(0x1e3a5f);
         this.btnBgs[i].setStrokeStyle(isDebug ? 1 : 2, 0x00ff88);
         this.btnLabels[i].setColor('#ffd700');
       } else {
-        this.btnBgs[i].setFillStyle(isDebug ? 0x1a1a1a : COLOR_CELL);
+        this.btnBgs[i].setFillStyle(isSpecial ? 0x1a1a1a : COLOR_CELL);
         this.btnBgs[i].setStrokeStyle(isDebug ? 1 : 2, isDebug ? 0x555555 : 0xffd700);
-        this.btnLabels[i].setColor(isDebug ? '#555555' : '#ffffff');
+        this.btnLabels[i].setColor(isSpecial ? (isDebug ? '#555555' : '#aaaaaa') : '#ffffff');
       }
     }
   }
 
   private confirmSelection(): void {
-    if (this.selectedIndex < MODES.length) {
-      this.scene.start('CharacterSelect', { mode: MODES[this.selectedIndex].mode });
+    const changeGradeIdx = this.modes.length;
+
+    if (this.selectedIndex < changeGradeIdx) {
+      this.scene.start('CharacterSelect', { mode: this.modes[this.selectedIndex].mode, grade: this.grade });
+    } else if (this.selectedIndex === changeGradeIdx) {
+      this.scene.start('GradeSelect');
     } else {
       this.scene.start('Debug');
     }

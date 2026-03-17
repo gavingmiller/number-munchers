@@ -1,7 +1,19 @@
-import type { Rule, GameMode } from '../../types.ts';
+import type { Rule, GameMode, GradeLevel } from '../../types.ts';
 import { isPrime } from './PrimeUtils.ts';
-import { isFactorOf, getFactors } from './FactorUtils.ts';
+import { isFactorOf } from './FactorUtils.ts';
 import { isMultipleOf, randomInt } from './MathUtils.ts';
+
+/** Curated target pools for Factors mode, indexed by level (1-based). */
+export const FACTORS_TARGET_POOLS: Record<number, number[]> = {
+  1: [4, 6, 8, 10],
+  2: [9, 12, 14, 15],
+  3: [16, 18, 20, 24],
+  4: [25, 28, 30, 36],
+  5: [40, 42, 48, 50],
+  6: [54, 56, 60, 64],
+  7: [72, 75, 80, 84],
+  8: [90, 96, 100],
+};
 
 /** Evaluate a simple equation string like "3+4", "8-1", "2×5". */
 function evaluateEquation(expr: string): number {
@@ -16,10 +28,20 @@ function evaluateEquation(expr: string): number {
 }
 
 export function isCorrect(value: number | string, rule: Rule): boolean {
-  if (rule.mode === 'equalities') {
+  if (rule.mode === 'equalities' || rule.mode === 'sums') {
     if (typeof value === 'string') {
       const result = evaluateEquation(value);
       return !Number.isNaN(result) && result === rule.target!;
+    }
+    return value === rule.target!;
+  }
+
+  if (rule.mode === 'missing_addends') {
+    // For missing addends, cells are equation strings; correctness is pre-computed by grid generator
+    // But if called directly, evaluate the blank value
+    if (typeof value === 'string') {
+      const blank = extractBlankValue(value);
+      return blank === rule.target!;
     }
     return value === rule.target!;
   }
@@ -28,6 +50,8 @@ export function isCorrect(value: number | string, rule: Rule): boolean {
   if (Number.isNaN(num)) return false;
 
   switch (rule.mode) {
+    case 'even_odd':
+      return rule.parity === 'even' ? num % 2 === 0 : num % 2 !== 0;
     case 'multiples':
       return isMultipleOf(num, rule.target!);
     case 'factors':
@@ -39,9 +63,45 @@ export function isCorrect(value: number | string, rule: Rule): boolean {
   }
 }
 
+/** Extract the blank value from a missing addend equation like "_ + 3 = 10" → 7 */
+export function extractBlankValue(expr: string): number {
+  const cleaned = expr.replace(/\s/g, '');
+  // Pattern: _+a=b or _-a=b or a+_=b or a-_=b
+  let match = cleaned.match(/^_\+(\d+)=(\d+)$/);
+  if (match) return Number(match[2]) - Number(match[1]);
+  match = cleaned.match(/^_-(\d+)=(\d+)$/);
+  if (match) return Number(match[2]) + Number(match[1]);
+  match = cleaned.match(/^(\d+)\+_=(\d+)$/);
+  if (match) return Number(match[2]) - Number(match[1]);
+  match = cleaned.match(/^(\d+)-_=(\d+)$/);
+  if (match) return Number(match[1]) - Number(match[2]);
+  return NaN;
+}
+
+/** Generate a missing addend equation where the blank equals the target. */
+export function generateMissingAddendEquation(target: number, grade?: GradeLevel): string {
+  const maxSum = (grade && grade <= 1) ? 20 : 100;
+  // _ + a = b, where blank = target
+  const a = randomInt(1, Math.max(1, maxSum - target));
+  const b = target + a;
+  if (b > maxSum) {
+    // Fallback: a + _ = b
+    const fallbackA = randomInt(1, Math.max(1, target - 1));
+    return `${fallbackA} + _ = ${fallbackA + target}`;
+  }
+  return Math.random() < 0.5 ? `_ + ${a} = ${b}` : `${a} + _ = ${b}`;
+}
+
+/** Generate a missing addend equation where the blank does NOT equal the target. */
+export function generateWrongMissingAddendEquation(target: number, grade?: GradeLevel): string {
+  let wrongTarget = target + randomInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
+  if (wrongTarget < 1) wrongTarget = target + randomInt(1, 5);
+  return generateMissingAddendEquation(wrongTarget, grade);
+}
+
 /** Generate a random equation string that equals the target. */
-export function generateEquation(target: number): string {
-  const ops = ['+', '-', '×'];
+export function generateEquation(target: number, grade?: GradeLevel): string {
+  const ops = (grade && grade <= 2) ? ['+'] : ['+', '-', '×'];
   const op = ops[randomInt(0, ops.length - 1)];
 
   switch (op) {
@@ -79,29 +139,44 @@ export function generateEquation(target: number): string {
 }
 
 /** Generate a random equation string that does NOT equal the target. */
-export function generateWrongEquation(target: number): string {
+export function generateWrongEquation(target: number, grade?: GradeLevel): string {
   // Generate an equation for a nearby but different value
   let wrongTarget = target + randomInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
   if (wrongTarget < 0) wrongTarget = target + randomInt(1, 5);
-  return generateEquation(wrongTarget);
+  return generateEquation(wrongTarget, grade);
 }
 
-export function generateRule(mode: GameMode, level: number): Rule {
+export function generateRule(mode: GameMode, level: number, grade?: GradeLevel): Rule {
   switch (mode) {
+    case 'sums': {
+      const maxSum = (grade && grade <= 1) ? 20 : (grade && grade <= 2) ? 100 : 5 + level * 3;
+      const target = randomInt(2, Math.min(maxSum, 5 + level * 3));
+      return { mode, target, description: `Equals ${target}` };
+    }
+    case 'missing_addends': {
+      const maxVal = (grade && grade <= 1) ? 20 : 100;
+      const target = randomInt(1, Math.min(maxVal - 1, 5 + level * 2));
+      return { mode, target, description: `Missing number is ${target}` };
+    }
+    case 'even_odd': {
+      const parity: 'even' | 'odd' = Math.random() < 0.5 ? 'even' : 'odd';
+      return { mode, parity, description: parity === 'even' ? 'Even Numbers' : 'Odd Numbers' };
+    }
     case 'multiples': {
+      if (grade === 3) {
+        const pool = [2, 3, 4, 5, 10];
+        const target = pool[randomInt(0, pool.length - 1)];
+        return { mode, target, description: `Multiples of ${target}` };
+      }
       const maxTarget = Math.min(2 + level, 12);
       const target = randomInt(2, maxTarget);
       return { mode, target, description: `Multiples of ${target}` };
     }
     case 'factors': {
-      // Pick a target with at least 3 factors
-      const minTarget = 12;
-      const maxTarget = Math.min(12 + level * 10, 100);
-      let target = randomInt(minTarget, maxTarget);
-      // Ensure at least 3 factors
-      while (getFactors(target).length < 3) {
-        target = randomInt(minTarget, maxTarget);
-      }
+      const maxPoolLevel = Math.max(...Object.keys(FACTORS_TARGET_POOLS).map(Number));
+      const poolLevel = Math.min(level, maxPoolLevel);
+      const pool = FACTORS_TARGET_POOLS[poolLevel];
+      const target = pool[randomInt(0, pool.length - 1)];
       return { mode, target, description: `Factors of ${target}` };
     }
     case 'primes': {

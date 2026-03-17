@@ -1,6 +1,7 @@
 import type {
   GameState,
   GameMode,
+  GradeLevel,
   ScoreData,
   Direction,
   TroggleType,
@@ -24,7 +25,7 @@ import { createScore, addPoints, updatePointsPerCorrect } from './ScoreTracker.t
 const TROGGLE_TYPES: TroggleType[] = [
   'reggie',
   'fangs',
-  'bashful',
+  'squirt',
   'ember',
   'bonehead',
 ];
@@ -95,13 +96,15 @@ export function createLevelState(
   mode: GameMode,
   level: number,
   previousScore?: ScoreData,
+  grade?: GradeLevel,
 ): GameState {
-  const config = getLevelConfig(level);
-  const rule = generateRule(mode, level);
+  const effectiveGrade = grade ?? 4;
+  const config = getLevelConfig(level, mode, effectiveGrade);
+  const rule = generateRule(mode, level, effectiveGrade);
   const grid = generateGrid(rule, {
     numberRangeMin: config.numberRangeMin,
     numberRangeMax: config.numberRangeMax,
-  });
+  }, effectiveGrade);
 
   const player = createPlayer();
 
@@ -137,6 +140,7 @@ export function createLevelState(
 
   return {
     mode,
+    grade: effectiveGrade,
     level,
     status: 'playing',
     score,

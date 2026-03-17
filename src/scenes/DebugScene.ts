@@ -20,7 +20,7 @@ interface TroggleSpec {
 const TROGGLE_SPECS: TroggleSpec[] = [
   { type: 'reggie',  desc: 'Straight line, exits edge, re-enters later' },
   { type: 'fangs',     desc: 'Chases player (row-first priority)' },
-  { type: 'bashful',   desc: 'Flees player when within distance 3' },
+  { type: 'squirt',    desc: 'Flees player when within distance 3' },
   { type: 'ember',     desc: 'Drifts randomly each tick' },
   { type: 'bonehead',  desc: 'Fastest — seeks closest cell to player' },
 ];

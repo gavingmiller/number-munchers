@@ -14,11 +14,17 @@ export function drawTroggle(
   P: number,
 ): void {
   switch (type) {
+    case 'reggie':
+      drawReggie(scene, container, P);
+      break;
     case 'ember':
       drawEmber(scene, container, P);
       break;
     case 'fangs':
       drawFangs(scene, container, P);
+      break;
+    case 'squirt':
+      drawSquirt(scene, container, P);
       break;
     case 'bonehead':
       drawBonehead(scene, container, P);
@@ -107,6 +113,7 @@ function drawEmber(
   container.add(g);
 }
 
+// TODO: Snake sprite should change view perspective based on movement direction (up, left, right, down)
 /** Fangs — green snake with large head, eyes, forked red tongue, coiled body */
 function drawFangs(
   scene: Phaser.Scene,
@@ -212,6 +219,166 @@ function drawBonehead(
     [3,7],[4,7],[5,7],[6,7],
   ];
   fillPixels(g, dark, 0x1a1a1a, P, oX, oY);
+
+  container.add(g);
+}
+
+/** Squirt — blue water droplet / slime blob with two cute eyes */
+function drawSquirt(
+  scene: Phaser.Scene,
+  container: Phaser.GameObjects.Container,
+  P: number,
+): void {
+  const W = 10;
+  const H = 12;
+  const oX = -(W * P) / 2;
+  const oY = -(H * P) / 2;
+  const g = scene.add.graphics();
+
+  // Dark blue outline / shadow
+  const outline: [number, number][] = [
+    [4,0],[5,0],
+    [3,1],[6,1],
+    [2,2],[7,2],
+    [1,3],[8,3],
+    [1,4],[8,4],
+    [0,5],[9,5],
+    [0,6],[9,6],
+    [0,7],[9,7],
+    [0,8],[9,8],
+    [0,9],[9,9],
+    [1,10],[8,10],
+    [2,11],[3,11],[4,11],[5,11],[6,11],[7,11],
+  ];
+  fillPixels(g, outline, 0x2a5480, P, oX, oY);
+
+  // Main blue body
+  const body: [number, number][] = [
+    [4,1],[5,1],
+    [3,2],[4,2],[5,2],[6,2],
+    [2,3],[3,3],[4,3],[5,3],[6,3],[7,3],
+    [2,4],[3,4],[4,4],[5,4],[6,4],[7,4],
+    [1,5],[2,5],[3,5],[4,5],[5,5],[6,5],[7,5],[8,5],
+    [1,6],[2,6],[3,6],[4,6],[5,6],[6,6],[7,6],[8,6],
+    [1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[7,7],[8,7],
+    [1,8],[2,8],[3,8],[4,8],[5,8],[6,8],[7,8],[8,8],
+    [1,9],[2,9],[3,9],[4,9],[5,9],[6,9],[7,9],[8,9],
+    [2,10],[3,10],[4,10],[5,10],[6,10],[7,10],
+  ];
+  fillPixels(g, body, 0x4a8abf, P, oX, oY);
+
+  // Light blue highlight (top-left area for shine)
+  const highlight: [number, number][] = [
+    [3,3],[4,3],
+    [2,4],[3,4],
+    [1,5],[2,5],
+    [1,6],[2,6],
+  ];
+  fillPixels(g, highlight, 0x7cb8e4, P, oX, oY);
+
+  // Dark eyes
+  const eyes: [number, number][] = [
+    [3,7],[4,7],
+    [6,7],[7,7],
+  ];
+  fillPixels(g, eyes, 0x1a1a2e, P, oX, oY);
+
+  // White eye shine
+  const shine: [number, number][] = [
+    [3,6],
+    [6,6],
+  ];
+  fillPixels(g, shine, 0xffffff, P, oX, oY);
+
+  container.add(g);
+}
+
+/** Reggie — purple snail with spiral shell, pink body, two antennae */
+function drawReggie(
+  scene: Phaser.Scene,
+  container: Phaser.GameObjects.Container,
+  P: number,
+): void {
+  const W = 12;
+  const H = 12;
+  const oX = -(W * P) / 2;
+  const oY = -(H * P) / 2;
+  const g = scene.add.graphics();
+
+  // Antennae stalks (dark)
+  const stalks: [number, number][] = [
+    [2,0],[4,0],
+    [2,1],[4,1],
+    [2,2],[4,2],
+  ];
+  fillPixels(g, stalks, 0x3a3a4a, P, oX, oY);
+
+  // Antenna tips (small balls)
+  const tips: [number, number][] = [
+    [1,0],[3,0],
+  ];
+  fillPixels(g, tips, 0x3a3a4a, P, oX, oY);
+
+  // Pink/light body (left side — head and foot)
+  const body: [number, number][] = [
+    [1,3],[2,3],[3,3],[4,3],
+    [0,4],[1,4],[2,4],[3,4],[4,4],
+    [0,5],[1,5],[2,5],[3,5],[4,5],
+    [0,6],[1,6],[2,6],[3,6],[4,6],
+    [0,7],[1,7],[2,7],[3,7],[4,7],
+    [0,8],[1,8],[2,8],[3,8],[4,8],[5,8],
+    [0,9],[1,9],[2,9],[3,9],[4,9],[5,9],[6,9],[7,9],[8,9],[9,9],
+    [1,10],[2,10],[3,10],[4,10],[5,10],[6,10],[7,10],[8,10],
+  ];
+  fillPixels(g, body, 0xc9a8bf, P, oX, oY);
+
+  // Lighter belly/underside
+  const belly: [number, number][] = [
+    [1,9],[2,9],[3,9],[4,9],[5,9],[6,9],[7,9],[8,9],
+    [2,10],[3,10],[4,10],[5,10],[6,10],[7,10],
+  ];
+  fillPixels(g, belly, 0xd9bccf, P, oX, oY);
+
+  // Purple shell (outer)
+  const shell: [number, number][] = [
+    [6,3],[7,3],[8,3],
+    [5,4],[6,4],[7,4],[8,4],[9,4],
+    [5,5],[6,5],[7,5],[8,5],[9,5],[10,5],
+    [5,6],[6,6],[7,6],[8,6],[9,6],[10,6],
+    [5,7],[6,7],[7,7],[8,7],[9,7],[10,7],
+    [6,8],[7,8],[8,8],[9,8],
+  ];
+  fillPixels(g, shell, 0x7a5ea8, P, oX, oY);
+
+  // Darker purple shell spiral
+  const spiral: [number, number][] = [
+    [7,4],[8,4],
+    [9,5],
+    [9,6],
+    [8,7],[9,7],
+    [7,6],[8,6],
+    [7,5],
+  ];
+  fillPixels(g, spiral, 0x5a3e88, P, oX, oY);
+
+  // Shell highlight (lighter center)
+  const shellHighlight: [number, number][] = [
+    [6,5],[6,6],
+    [7,5],
+  ];
+  fillPixels(g, shellHighlight, 0x9a7ec8, P, oX, oY);
+
+  // Eye (on the head)
+  const eye: [number, number][] = [
+    [2,5],[3,5],
+  ];
+  fillPixels(g, eye, 0xffffff, P, oX, oY);
+
+  // Pupil
+  const pupil: [number, number][] = [
+    [3,5],
+  ];
+  fillPixels(g, pupil, 0x1a1a2e, P, oX, oY);
 
   container.add(g);
 }
