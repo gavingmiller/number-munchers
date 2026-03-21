@@ -146,6 +146,43 @@ export function generateWrongEquation(target: number, grade?: GradeLevel): strin
   return generateEquation(wrongTarget, grade);
 }
 
+/** Build a kid-friendly explanation of why a munched cell was wrong. */
+export function getWrongExplanation(value: number | string, rule: Rule): string {
+  switch (rule.mode) {
+    case 'multiples':
+      return `${value} is not a multiple of ${rule.target}`;
+    case 'factors':
+      return `${value} is not a factor of ${rule.target}`;
+    case 'primes':
+      return `${value} is not a prime number`;
+    case 'even_odd':
+      return rule.parity === 'even'
+        ? `${value} is not an even number`
+        : `${value} is not an odd number`;
+    case 'sums':
+    case 'equalities': {
+      if (typeof value === 'string') {
+        const result = evaluateEquation(value);
+        if (!Number.isNaN(result)) {
+          return `${value} = ${result}, not ${rule.target}`;
+        }
+      }
+      return `${value} does not equal ${rule.target}`;
+    }
+    case 'missing_addends': {
+      if (typeof value === 'string') {
+        const blank = extractBlankValue(value);
+        if (!Number.isNaN(blank)) {
+          return `The missing number is ${blank}, not ${rule.target}`;
+        }
+      }
+      return `The missing number is not ${rule.target}`;
+    }
+    default:
+      return `${value} is not correct`;
+  }
+}
+
 export function generateRule(mode: GameMode, level: number, grade?: GradeLevel): Rule {
   switch (mode) {
     case 'sums': {

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { GameMode, GradeLevel } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
-import { getModesForGrade, MODE_LABELS, GRADE_CONFIG } from '../game/logic/GradeConfig';
+import { getModesForGrade, MODE_LABELS, GRADE_CONFIG, getModeExample } from '../game/logic/GradeConfig';
 
 interface ModeOption {
   label: string;
@@ -61,9 +61,9 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Mode buttons
     const btnW = 360;
-    const btnH = 64;
-    const startY = 370;
-    const gap = 80;
+    const btnH = 80;
+    const startY = 360;
+    const gap = 94;
 
     for (let i = 0; i < this.modes.length; i++) {
       const opt = this.modes[i];
@@ -73,10 +73,17 @@ export class MainMenuScene extends Phaser.Scene {
         .setStrokeStyle(2, 0xffd700)
         .setInteractive({ useHandCursor: true });
 
-      const label = this.add.text(centerX, y, opt.label, {
+      const label = this.add.text(centerX, y - 12, opt.label, {
         fontSize: '28px',
         fontFamily: 'Arial',
         color: '#ffffff',
+        align: 'center',
+      }).setOrigin(0.5);
+
+      this.add.text(centerX, y + 14, getModeExample(opt.mode, this.grade), {
+        fontSize: '17px',
+        fontFamily: 'Arial',
+        color: '#777777',
         align: 'center',
       }).setOrigin(0.5);
 

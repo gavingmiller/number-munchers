@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { GameState, Direction, GameMode, GradeLevel, ScoreData, CharacterType } from '../types';
 import { createLevelState, applyMove, applyMunch, applyTroggleHit, applyTroggleTick } from '../game/state/GameState';
 import { checkPlayerCell, checkPlayerTroggles } from '../game/logic/CollisionSystem';
+import { getWrongExplanation } from '../game/logic/RuleEngine';
 import { GridRenderer } from '../ui/GridRenderer';
 import { HUD } from '../ui/HUD';
 import { DPad } from '../ui/DPad';
@@ -180,12 +181,13 @@ export class GameScene extends Phaser.Scene {
         COLOR_WRONG_FLASH,
         FLASH_WRONG_MS,
       );
-      this.triggerLifeLost();
+      const explanation = getWrongExplanation(cellResult.cell.value, this.state.rule);
+      this.triggerLifeLost(explanation);
     }
     // 'empty' type: do nothing
   }
 
-  private triggerLifeLost(): void {
+  private triggerLifeLost(explanation?: string): void {
     this.state = applyTroggleHit(this.state);
 
     if (this.state.lives <= 0) {
@@ -198,25 +200,34 @@ export class GameScene extends Phaser.Scene {
     this.state.status = 'life-lost';
     this.hud.update(this.state);
     this.scene.pause();
-    this.scene.launch('GameOver', { lives: this.state.lives });
+    this.scene.launch('GameOver', { lives: this.state.lives, explanation });
   }
 
   private handleLevelComplete(): void {
     const nextLevel = this.state.level + 1;
+    const level = this.state.level;
 
-    // Every 3 levels: show cutscene
-    if (this.state.level % 3 === 0) {
-      this.state.status = 'cutscene';
-      this.scene.pause();
-      this.scene.launch('Cutscene', {
-        level: this.state.level,
-        onComplete: () => {
-          this.advanceLevel(nextLevel);
-        },
-      });
-    } else {
-      this.advanceLevel(nextLevel);
-    }
+    this.state.status = 'cutscene';
+    this.scene.pause();
+
+    const afterLevelComplete = () => {
+      // Every 3 levels: show cutscene before advancing
+      if (level % 3 === 0) {
+        this.scene.launch('Cutscene', {
+          level,
+          onComplete: () => {
+            this.advanceLevel(nextLevel);
+          },
+        });
+      } else {
+        this.advanceLevel(nextLevel);
+      }
+    };
+
+    this.scene.launch('LevelComplete', {
+      level,
+      onComplete: afterLevelComplete,
+    });
   }
 
   private advanceLevel(nextLevel: number): void {
