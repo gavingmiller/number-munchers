@@ -10,16 +10,16 @@ describe('GRADE_CONFIG', () => {
     }
   });
 
-  it('grade 1 has sums and missing_addends only', () => {
-    expect(GRADE_CONFIG[1].modes).toEqual(['sums', 'missing_addends']);
+  it('grade 1 has sums, missing_addends, and even_odd', () => {
+    expect(GRADE_CONFIG[1].modes).toEqual(['sums', 'missing_addends', 'even_odd']);
   });
 
   it('grade 2 has sums, missing_addends, and even_odd', () => {
     expect(GRADE_CONFIG[2].modes).toEqual(['sums', 'missing_addends', 'even_odd']);
   });
 
-  it('grade 3 has sums, even_odd, multiples, and equalities', () => {
-    expect(GRADE_CONFIG[3].modes).toEqual(['sums', 'even_odd', 'multiples', 'equalities']);
+  it('grade 3 has sums, multiples, and equalities', () => {
+    expect(GRADE_CONFIG[3].modes).toEqual(['sums', 'multiples', 'equalities']);
   });
 
   it('grade 4 has multiples, factors, primes, and equalities', () => {

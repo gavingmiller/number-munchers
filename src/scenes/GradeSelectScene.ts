@@ -9,9 +9,9 @@ interface GradeOption {
 }
 
 const GRADES: GradeOption[] = [
-  { grade: 1, label: 'Grade 1', hint: 'Sums & Missing Addends (to 20)' },
+  { grade: 1, label: 'Grade 1', hint: 'Sums, Missing Addends & Even/Odd (to 20)' },
   { grade: 2, label: 'Grade 2', hint: 'Sums, Missing Addends & Even/Odd' },
-  { grade: 3, label: 'Grade 3', hint: 'Multiples, Equalities & More' },
+  { grade: 3, label: 'Grade 3', hint: 'Sums, Multiples & Equalities' },
   { grade: 4, label: 'Grade 4', hint: 'Factors, Primes & Equalities' },
   { grade: 5, label: 'Grade 5', hint: 'Advanced (numbers to 200)' },
 ];
