@@ -68,13 +68,6 @@ export class HiScoreScene extends Phaser.Scene {
       this.scene.start('MainMenu');
     });
 
-    // Footer
-    this.add.text(cx, btnY + 60, 'Press space to continue', {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      color: '#888888',
-    }).setOrigin(0.5);
-
     // Keyboard
     if (this.input.keyboard) {
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);

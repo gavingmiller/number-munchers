@@ -99,13 +99,6 @@ export class GradeSelectScene extends Phaser.Scene {
       });
     }
 
-    // Footer
-    this.add.text(centerX, CANVAS_HEIGHT - 60, 'Use arrows to select, space to confirm', {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      color: '#888888',
-    }).setOrigin(0.5);
-
     // Keyboard input
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();

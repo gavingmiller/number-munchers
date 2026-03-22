@@ -22,6 +22,7 @@ export class MainMenuScene extends Phaser.Scene {
   private spaceKey?: Phaser.Input.Keyboard.Key;
   private moveTimer = 0;
   private readonly MOVE_MS = 200;
+  private debugVisible = false;
 
   constructor() {
     super({ key: 'MainMenu' });
@@ -39,6 +40,9 @@ export class MainMenuScene extends Phaser.Scene {
     this.selectedIndex = 0;
     this.btnBgs = [];
     this.btnLabels = [];
+
+    const isTouchOnly = this.sys.game.device.input.touch && !this.sys.game.device.os.desktop;
+    this.debugVisible = !isTouchOnly;
 
     const centerX = CANVAS_WIDTH / 2;
 
@@ -125,36 +129,31 @@ export class MainMenuScene extends Phaser.Scene {
       this.confirmSelection();
     });
 
-    // Debug button
-    const debugY = changeGradeY + gap * 0.75;
-    const debugBg = this.add.rectangle(centerX, debugY, btnW, btnH * 0.75, 0x1a1a1a)
-      .setStrokeStyle(1, 0x555555)
-      .setInteractive({ useHandCursor: true });
-    const debugLabel = this.add.text(centerX, debugY, 'Debug Mode', {
-      fontSize: '20px',
-      fontFamily: 'Arial',
-      color: '#555555',
-    }).setOrigin(0.5);
+    // Debug button (hidden on touch-only devices like iPad)
+    if (this.debugVisible) {
+      const debugY = changeGradeY + gap * 0.75;
+      const debugBg = this.add.rectangle(centerX, debugY, btnW, btnH * 0.75, 0x1a1a1a)
+        .setStrokeStyle(1, 0x555555)
+        .setInteractive({ useHandCursor: true });
+      const debugLabel = this.add.text(centerX, debugY, 'Debug Mode', {
+        fontSize: '20px',
+        fontFamily: 'Arial',
+        color: '#555555',
+      }).setOrigin(0.5);
 
-    this.btnBgs.push(debugBg);
-    this.btnLabels.push(debugLabel);
+      this.btnBgs.push(debugBg);
+      this.btnLabels.push(debugLabel);
 
-    const debugIdx = this.modes.length + 1;
-    debugBg.on('pointerover', () => {
-      this.selectedIndex = debugIdx;
-      this.updateHighlight();
-    });
-    debugBg.on('pointerdown', () => {
-      this.selectedIndex = debugIdx;
-      this.confirmSelection();
-    });
-
-    // Footer
-    this.add.text(centerX, CANVAS_HEIGHT - 60, 'Use arrows to select, space to confirm', {
-      fontSize: '18px',
-      fontFamily: 'Arial',
-      color: '#888888',
-    }).setOrigin(0.5);
+      const debugIdx = this.modes.length + 1;
+      debugBg.on('pointerover', () => {
+        this.selectedIndex = debugIdx;
+        this.updateHighlight();
+      });
+      debugBg.on('pointerdown', () => {
+        this.selectedIndex = debugIdx;
+        this.confirmSelection();
+      });
+    }
 
     // Keyboard input
     if (this.input.keyboard) {
@@ -171,7 +170,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     if (!this.cursors) return;
 
-    const totalItems = this.modes.length + 2; // modes + change grade + debug
+    const totalItems = this.modes.length + 1 + (this.debugVisible ? 1 : 0);
 
     if (this.cursors.up.isDown) {
       this.moveTimer = 0;
@@ -214,7 +213,7 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('CharacterSelect', { mode: this.modes[this.selectedIndex].mode, grade: this.grade });
     } else if (this.selectedIndex === changeGradeIdx) {
       this.scene.start('GradeSelect');
-    } else {
+    } else if (this.debugVisible) {
       this.scene.start('Debug');
     }
   }

@@ -8,7 +8,10 @@ import { HUD } from '../ui/HUD';
 import { DPad } from '../ui/DPad';
 import { RuleBanner } from '../ui/RuleBanner';
 import { DebugOverlay } from '../ui/DebugOverlay';
+import { drawHomeIcon } from '../ui/CharacterSprites';
 import {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
   PLAYER_MOVE_MS,
   FLASH_CORRECT_MS,
   FLASH_WRONG_MS,
@@ -37,6 +40,8 @@ export class GameScene extends Phaser.Scene {
   private gameTickTimer = 0;
   private readonly GAME_TICK_MS = 100;
   private sceneData!: GameSceneData;
+  private confirmOverlay: Phaser.GameObjects.GameObject[] = [];
+  private paused = false;
 
   constructor() {
     super({ key: 'Game' });
@@ -57,6 +62,8 @@ export class GameScene extends Phaser.Scene {
     this.state = createLevelState(mode, level ?? 1, score, grade);
     this.moveTimer = 0;
     this.gameTickTimer = 0;
+    this.paused = false;
+    this.confirmOverlay = [];
 
     // Create UI components
     this.ruleBanner = new RuleBanner(this);
@@ -84,6 +91,19 @@ export class GameScene extends Phaser.Scene {
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
+    // Home button (top-left corner) — pixel art house sprite
+    const homeContainer = this.add.container(36, 36);
+    drawHomeIcon(this, homeContainer, 4);
+    homeContainer.setDepth(20).setScrollFactor(0).setAlpha(0.55);
+    homeContainer.setSize(48, 48).setInteractive({ useHandCursor: true });
+    homeContainer.on('pointerdown', () => this.showExitConfirmation());
+
+    // ESC key also triggers exit
+    if (this.input.keyboard) {
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+        .on('down', () => this.showExitConfirmation());
+    }
+
     // Listen for resume from overlay scenes
     this.events.on('resume', () => {
       // Reset timers and unblock update() after returning from overlay
@@ -96,6 +116,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    if (this.paused) return;
     if (this.state.status !== 'playing') return;
 
     // Handle keyboard movement with throttle
@@ -122,7 +143,9 @@ export class GameScene extends Phaser.Scene {
       // Check troggle collision
       const troggleResult = checkPlayerTroggles(this.state);
       if (troggleResult.type === 'troggle-hit') {
-        this.triggerLifeLost();
+        const troggle = this.state.troggles.find(t => t.id === troggleResult.troggleId);
+        const name = troggle ? troggle.type.charAt(0).toUpperCase() + troggle.type.slice(1) : 'a Troggle';
+        this.triggerLifeLost(undefined, name);
         return;
       }
 
@@ -150,7 +173,9 @@ export class GameScene extends Phaser.Scene {
     // Check troggle collision after moving
     const troggleResult = checkPlayerTroggles(this.state);
     if (troggleResult.type === 'troggle-hit') {
-      this.triggerLifeLost();
+      const troggle = this.state.troggles.find(t => t.id === troggleResult.troggleId);
+      const name = troggle ? troggle.type.charAt(0).toUpperCase() + troggle.type.slice(1) : 'a Troggle';
+      this.triggerLifeLost(undefined, name);
     }
   }
 
@@ -187,7 +212,7 @@ export class GameScene extends Phaser.Scene {
     // 'empty' type: do nothing
   }
 
-  private triggerLifeLost(explanation?: string): void {
+  private triggerLifeLost(explanation?: string, caughtBy?: string): void {
     this.state = applyTroggleHit(this.state);
 
     if (this.state.lives <= 0) {
@@ -200,7 +225,7 @@ export class GameScene extends Phaser.Scene {
     this.state.status = 'life-lost';
     this.hud.update(this.state);
     this.scene.pause();
-    this.scene.launch('GameOver', { lives: this.state.lives, explanation });
+    this.scene.launch('GameOver', { lives: this.state.lives, explanation, caughtBy });
   }
 
   private handleLevelComplete(): void {
@@ -238,5 +263,62 @@ export class GameScene extends Phaser.Scene {
       character: this.sceneData.character,
       grade: this.sceneData.grade,
     });
+  }
+
+  private showExitConfirmation(): void {
+    if (this.paused) return;
+    this.paused = true;
+
+    const cx = CANVAS_WIDTH / 2;
+    const cy = CANVAS_HEIGHT / 2;
+
+    // Dark overlay
+    const bg = this.add.rectangle(cx, cy, CANVAS_WIDTH, CANVAS_HEIGHT, 0x000000, 0.8)
+      .setScrollFactor(0).setDepth(100).setInteractive();
+
+    // Dialog box
+    const dialog = this.add.rectangle(cx, cy, 400, 220, 0x1a1a2e)
+      .setStrokeStyle(2, 0xffd700)
+      .setScrollFactor(0).setDepth(101);
+
+    const title = this.add.text(cx, cy - 50, 'Exit Level?', {
+      fontSize: '36px', fontFamily: 'Arial', color: '#ffd700', fontStyle: 'bold',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(102);
+
+    // Yes button
+    const yesBg = this.add.rectangle(cx - 80, cy + 30, 120, 50, 0x3a5a2a)
+      .setStrokeStyle(2, 0x44cc44)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0).setDepth(102);
+    const yesText = this.add.text(cx - 80, cy + 30, 'Yes', {
+      fontSize: '24px', fontFamily: 'Arial', color: '#44cc44', fontStyle: 'bold',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(103);
+
+    // No button
+    const noBg = this.add.rectangle(cx + 80, cy + 30, 120, 50, 0x5a2a2a)
+      .setStrokeStyle(2, 0xff4444)
+      .setInteractive({ useHandCursor: true })
+      .setScrollFactor(0).setDepth(102);
+    const noText = this.add.text(cx + 80, cy + 30, 'No', {
+      fontSize: '24px', fontFamily: 'Arial', color: '#ff4444', fontStyle: 'bold',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(103);
+
+    this.confirmOverlay = [bg, dialog, title, yesBg, yesText, noBg, noText];
+
+    yesBg.on('pointerdown', () => {
+      this.scene.start('MainMenu');
+    });
+
+    noBg.on('pointerdown', () => {
+      this.dismissExitConfirmation();
+    });
+  }
+
+  private dismissExitConfirmation(): void {
+    for (const obj of this.confirmOverlay) {
+      obj.destroy();
+    }
+    this.confirmOverlay = [];
+    this.paused = false;
   }
 }

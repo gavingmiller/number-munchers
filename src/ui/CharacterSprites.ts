@@ -3,6 +3,58 @@ import type { CharacterType } from '../types';
 import { COLOR_PLAYER } from '../constants';
 
 /**
+ * Draw a pixel art house icon into a container at (0,0) local coords.
+ * @param pixelSize — size of each "pixel" block (4 for ~40x40 icon)
+ */
+export function drawHomeIcon(
+  scene: Phaser.Scene,
+  container: Phaser.GameObjects.Container,
+  pixelSize: number,
+): void {
+  const g = scene.add.graphics();
+  const P = pixelSize;
+
+  const roofColor = 0xcc4444;
+  const wallColor = 0xddaa55;
+  const doorColor = 0x664422;
+
+  // 10x10 grid centered
+  const ox = -(10 * P) / 2;
+  const oy = -(10 * P) / 2;
+
+  // Roof (triangle-ish)
+  const roof: [number, number][] = [
+    [4,0],[5,0],
+    [3,1],[4,1],[5,1],[6,1],
+    [2,2],[3,2],[4,2],[5,2],[6,2],[7,2],
+    [1,3],[2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3],
+  ];
+  fillPixels(g, roof, roofColor, P, ox, oy);
+
+  // Walls
+  const walls: [number, number][] = [
+    [2,4],[3,4],[4,4],[5,4],[6,4],[7,4],
+    [2,5],[3,5],[4,5],[5,5],[6,5],[7,5],
+    [2,6],[3,6],[4,6],[5,6],[6,6],[7,6],
+    [2,7],[3,7],[4,7],[5,7],[6,7],[7,7],
+    [2,8],[3,8],[4,8],[5,8],[6,8],[7,8],
+    [2,9],[3,9],[4,9],[5,9],[6,9],[7,9],
+  ];
+  fillPixels(g, walls, wallColor, P, ox, oy);
+
+  // Door
+  const door: [number, number][] = [
+    [4,6],[5,6],
+    [4,7],[5,7],
+    [4,8],[5,8],
+    [4,9],[5,9],
+  ];
+  fillPixels(g, door, doorColor, P, ox, oy);
+
+  container.add(g);
+}
+
+/**
  * Draw a character sprite into a container at (0,0) local coords.
  * @param pixelSize — size of each "pixel" block (4 for grid, 6 for preview)
  */

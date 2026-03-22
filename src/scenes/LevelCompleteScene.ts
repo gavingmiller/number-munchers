@@ -37,7 +37,7 @@ export class LevelCompleteScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(1);
 
     // Prompt
-    const prompt = this.add.text(cx, cy + 60, 'Press any key or tap to continue', {
+    const prompt = this.add.text(cx, cy + 60, 'Tap to continue', {
       fontSize: '22px',
       fontFamily: 'Arial',
       color: '#aaaaaa',

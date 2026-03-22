@@ -4,11 +4,13 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../constants';
 interface GameOverData {
   lives: number;
   explanation?: string;
+  caughtBy?: string;
 }
 
 export class GameOverScene extends Phaser.Scene {
   private lives = 0;
   private explanation?: string;
+  private caughtBy?: string;
 
   constructor() {
     super({ key: 'GameOver' });
@@ -17,6 +19,7 @@ export class GameOverScene extends Phaser.Scene {
   init(data: GameOverData): void {
     this.lives = data.lives ?? 0;
     this.explanation = data.explanation;
+    this.caughtBy = data.caughtBy;
   }
 
   create(): void {
@@ -44,7 +47,7 @@ export class GameOverScene extends Phaser.Scene {
         wordWrap: { width: CANVAS_WIDTH - 80 },
       }).setOrigin(0.5).setDepth(1);
 
-      const prompt = this.add.text(cx, cy + 80, 'Press any key or tap to continue', {
+      const prompt = this.add.text(cx, cy + 80, 'Tap to continue', {
         fontSize: '20px',
         fontFamily: 'Arial',
         color: '#aaaaaa',
@@ -66,24 +69,41 @@ export class GameOverScene extends Phaser.Scene {
         this.input.once('pointerdown', () => this.resume());
       });
     } else if (this.lives > 0) {
-      // Troggle hit — countdown to resume
-      this.add.text(cx, cy - 60, 'OOPS!', {
-        fontSize: '64px',
+      // Troggle hit — show which troggle caught the player
+      const heading = this.caughtBy
+        ? `${this.caughtBy} caught you!`
+        : 'A Troggle caught you!';
+
+      this.add.text(cx, cy - 60, heading, {
+        fontSize: '40px',
         fontFamily: 'Arial',
         color: '#ff4444',
         fontStyle: 'bold',
+        align: 'center',
+        wordWrap: { width: CANVAS_WIDTH - 80 },
       }).setOrigin(0.5).setDepth(1);
 
-      const countdownText = this.add.text(cx, cy + 40, 'Get Ready...', {
-        fontSize: '36px',
+      const prompt = this.add.text(cx, cy + 40, 'Tap to continue', {
+        fontSize: '20px',
         fontFamily: 'Arial',
-        color: '#ffffff',
+        color: '#aaaaaa',
       }).setOrigin(0.5).setDepth(1);
 
-      this.time.delayedCall(800, () => { countdownText.setText('3'); });
-      this.time.delayedCall(1600, () => { countdownText.setText('2'); });
-      this.time.delayedCall(2400, () => { countdownText.setText('1'); });
-      this.time.delayedCall(3200, () => { this.resume(); });
+      this.tweens.add({
+        targets: prompt,
+        alpha: { from: 1, to: 0.3 },
+        duration: 700,
+        yoyo: true,
+        repeat: -1,
+      });
+
+      // Brief delay to prevent accidental skip
+      this.time.delayedCall(400, () => {
+        if (this.input.keyboard) {
+          this.input.keyboard.once('keydown', () => this.resume());
+        }
+        this.input.once('pointerdown', () => this.resume());
+      });
     } else {
       // No lives left — fallback
       this.add.text(cx, cy, 'GAME OVER', {
