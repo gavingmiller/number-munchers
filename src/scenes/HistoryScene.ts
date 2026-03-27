@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { drawCharacter } from '../ui/CharacterSprites';
-import { getRecentGames } from '../game/state/Persistence';
+import { getRecentGames, formatStars } from '../game/state/Persistence';
 import { MODE_LABELS } from '../game/logic/GradeConfig';
 import type { GameRecord } from '../game/state/Persistence';
 
@@ -104,7 +104,7 @@ export class HistoryScene extends Phaser.Scene {
     });
 
     // Stars earned
-    this.add.text(350, y + 12, `\u2B50 ${game.starsEarned}`, {
+    this.add.text(350, y + 12, `\u2B50 ${formatStars(game.starsEarned)}`, {
       fontSize: '18px',
       fontFamily: 'Arial',
       color: '#ffd700',

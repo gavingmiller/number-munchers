@@ -8,6 +8,7 @@ import {
   isCharacterUnlocked,
   unlockCharacter,
   getAvailableStars,
+  formatStars,
 } from '../game/state/Persistence';
 
 const CHAR_LABELS: Record<CharacterType, string> = {
@@ -43,7 +44,7 @@ export class ShopScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Star balance
-    this.starsTxt = this.add.text(cx, 95, `\u2B50 ${getAvailableStars()} stars available`, {
+    this.starsTxt = this.add.text(cx, 95, `\u2B50 ${formatStars(getAvailableStars())} stars available`, {
       fontSize: '22px',
       fontFamily: 'Arial',
       color: '#ffffff',
@@ -159,7 +160,7 @@ export class ShopScene extends Phaser.Scene {
       this.add.rectangle(cx, cy, w, h, 0x000000, 0.4).setDepth(1);
       // Price
       const priceColor = canAfford ? '#ffd700' : '#ff4444';
-      this.add.text(cx, cy + h / 2 - 22, `\u2B50 ${price}`, {
+      this.add.text(cx, cy + h / 2 - 22, `\u2B50 ${formatStars(price)}`, {
         fontSize: '18px',
         fontFamily: 'Arial',
         color: priceColor,

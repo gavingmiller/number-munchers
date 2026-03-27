@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GameState } from '../types';
 import { HUD_Y, HUD_H, CANVAS_WIDTH, COLOR_HUD_TEXT } from '../constants';
+import { formatStars } from '../game/state/Persistence';
 
 export class HUD {
   private scene: Phaser.Scene;
@@ -19,7 +20,7 @@ export class HUD {
       .setDepth(8);
 
     // Stars on left
-    this.scoreTxt = this.scene.add.text(20, HUD_Y + HUD_H / 2, `\u2B50 ${state.starsEarned}`, {
+    this.scoreTxt = this.scene.add.text(20, HUD_Y + HUD_H / 2, `\u2B50 ${formatStars(state.starsEarned)}`, {
       fontSize: '28px',
       fontFamily: 'Arial',
       color: COLOR_HUD_TEXT,
@@ -50,7 +51,7 @@ export class HUD {
   }
 
   update(state: GameState): void {
-    this.scoreTxt.setText(`\u2B50 ${state.starsEarned}`);
+    this.scoreTxt.setText(`\u2B50 ${formatStars(state.starsEarned)}`);
     this.levelTxt.setText(`Lv ${state.level}`);
     this.livesTxt?.setText(this.heartsString(state.lives));
   }

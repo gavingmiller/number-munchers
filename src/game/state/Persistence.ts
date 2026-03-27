@@ -124,6 +124,11 @@ export function getTotalStars(): number {
   return data.unlocks.totalStars;
 }
 
+/** Format a star count with locale separators (e.g., 100,000). */
+export function formatStars(n: number): string {
+  return n.toLocaleString('en-US');
+}
+
 export function isCharacterUnlocked(character: CharacterType): boolean {
   const data = loadPlayerData();
   return data.unlocks.unlockedCharacters.includes(character);

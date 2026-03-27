@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { GameMode, GradeLevel } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { getModesForGrade, MODE_LABELS, GRADE_CONFIG, getModeExample } from '../game/logic/GradeConfig';
-import { getAvailableStars, loadPlayerData, savePlayerData } from '../game/state/Persistence';
+import { getAvailableStars, loadPlayerData, savePlayerData, formatStars } from '../game/state/Persistence';
 
 interface ModeOption {
   label: string;
@@ -60,7 +60,7 @@ export class MainMenuScene extends Phaser.Scene {
     const navBtnW = 130;
     const navBtnH = 36;
 
-    this.add.text(20, 35, `\u2B50 ${getAvailableStars()}`, {
+    this.add.text(20, 35, `\u2B50 ${formatStars(getAvailableStars())}`, {
       fontSize: '22px',
       fontFamily: 'Arial',
       color: '#ffd700',

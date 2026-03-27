@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { CANVAS_WIDTH } from '../constants';
-import { getAvailableStars } from '../game/state/Persistence';
+import { getAvailableStars, formatStars } from '../game/state/Persistence';
 
 interface HiScoreData {
   starsEarned: number;
@@ -30,7 +30,7 @@ export class HiScoreScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Stars earned this game
-    this.add.text(cx, 300, `\u2B50 ${this.starsEarned} stars earned!`, {
+    this.add.text(cx, 300, `\u2B50 ${formatStars(this.starsEarned)} stars earned!`, {
       fontSize: '48px',
       fontFamily: 'Arial',
       color: '#ffd700',
@@ -39,7 +39,7 @@ export class HiScoreScene extends Phaser.Scene {
 
     // Total star balance
     const totalAvailable = getAvailableStars();
-    this.add.text(cx, 370, `Total stars: ${totalAvailable}`, {
+    this.add.text(cx, 370, `Total stars: ${formatStars(totalAvailable)}`, {
       fontSize: '24px',
       fontFamily: 'Arial',
       color: '#aaaaaa',
