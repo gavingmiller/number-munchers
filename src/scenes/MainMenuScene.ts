@@ -56,38 +56,48 @@ export class MainMenuScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
-    // Star balance (top right)
-    this.add.text(CANVAS_WIDTH - 20, 30, `\u2B50 ${getAvailableStars()}`, {
+    // Left side: Stars + Shop (stacked)
+    const navBtnW = 130;
+    const navBtnH = 36;
+
+    this.add.text(20, 35, `\u2B50 ${getAvailableStars()}`, {
       fontSize: '22px',
       fontFamily: 'Arial',
       color: '#ffd700',
       fontStyle: 'bold',
-    }).setOrigin(1, 0);
+    }).setOrigin(0, 0);
 
-    // History & Shop buttons (top area)
-    const navBtnW = 120;
-    const navBtnH = 40;
-    const navY = 30;
-
-    const histBg = this.add.rectangle(30 + navBtnW / 2, navY + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
+    const shopBtnW = 90;
+    const shopBg = this.add.rectangle(20 + shopBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, shopBtnW, navBtnH, 0x1a1a1a)
       .setStrokeStyle(1, 0xffd700)
       .setInteractive({ useHandCursor: true });
-    this.add.text(30 + navBtnW / 2, navY + navBtnH / 2, 'History', {
-      fontSize: '16px',
-      fontFamily: 'Arial',
-      color: '#aaaaaa',
-    }).setOrigin(0.5);
-    histBg.on('pointerdown', () => this.scene.start('History'));
-
-    const shopBg = this.add.rectangle(30 + navBtnW + 15 + navBtnW / 2, navY + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
-      .setStrokeStyle(1, 0xffd700)
-      .setInteractive({ useHandCursor: true });
-    this.add.text(30 + navBtnW + 15 + navBtnW / 2, navY + navBtnH / 2, 'Shop', {
-      fontSize: '16px',
+    this.add.text(20 + shopBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, 'Shop', {
+      fontSize: '14px',
       fontFamily: 'Arial',
       color: '#aaaaaa',
     }).setOrigin(0.5);
     shopBg.on('pointerdown', () => this.scene.start('Shop'));
+
+    // Right side: Change Grade + History (stacked)
+    const gradeBg = this.add.rectangle(CANVAS_WIDTH - 20 - navBtnW / 2, 30 + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
+      .setStrokeStyle(1, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(CANVAS_WIDTH - 20 - navBtnW / 2, 30 + navBtnH / 2, 'Change Grade', {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      color: '#aaaaaa',
+    }).setOrigin(0.5);
+    gradeBg.on('pointerdown', () => this.scene.start('GradeSelect'));
+
+    const histBg = this.add.rectangle(CANVAS_WIDTH - 20 - navBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
+      .setStrokeStyle(1, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(CANVAS_WIDTH - 20 - navBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, 'History', {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      color: '#aaaaaa',
+    }).setOrigin(0.5);
+    histBg.on('pointerdown', () => this.scene.start('History'));
 
     // Grade indicator + subtitle
     this.add.text(centerX, 280, `${GRADE_CONFIG[this.grade].label} — Choose a game mode`, {
@@ -139,33 +149,9 @@ export class MainMenuScene extends Phaser.Scene {
       });
     }
 
-    // Change Grade button
-    const changeGradeY = startY + this.modes.length * gap + 10;
-    const changeGradeBg = this.add.rectangle(centerX, changeGradeY, btnW, btnH * 0.75, 0x1a1a1a)
-      .setStrokeStyle(1, 0xffd700)
-      .setInteractive({ useHandCursor: true });
-    const changeGradeLabel = this.add.text(centerX, changeGradeY, 'Change Grade', {
-      fontSize: '20px',
-      fontFamily: 'Arial',
-      color: '#aaaaaa',
-    }).setOrigin(0.5);
-
-    this.btnBgs.push(changeGradeBg);
-    this.btnLabels.push(changeGradeLabel);
-
-    const changeGradeIdx = this.modes.length;
-    changeGradeBg.on('pointerover', () => {
-      this.selectedIndex = changeGradeIdx;
-      this.updateHighlight();
-    });
-    changeGradeBg.on('pointerdown', () => {
-      this.selectedIndex = changeGradeIdx;
-      this.confirmSelection();
-    });
-
     // Debug button (hidden on touch-only devices like iPad)
     if (this.debugVisible) {
-      const debugY = changeGradeY + gap * 0.75;
+      const debugY = startY + this.modes.length * gap + 10;
       const debugBg = this.add.rectangle(centerX, debugY, btnW, btnH * 0.75, 0x1a1a1a)
         .setStrokeStyle(1, 0x555555)
         .setInteractive({ useHandCursor: true });
@@ -178,7 +164,7 @@ export class MainMenuScene extends Phaser.Scene {
       this.btnBgs.push(debugBg);
       this.btnLabels.push(debugLabel);
 
-      const debugIdx = this.modes.length + 1;
+      const debugIdx = this.modes.length;
       debugBg.on('pointerover', () => {
         this.selectedIndex = debugIdx;
         this.updateHighlight();
@@ -204,7 +190,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     if (!this.cursors) return;
 
-    const totalItems = this.modes.length + 1 + (this.debugVisible ? 1 : 0);
+    const totalItems = this.modes.length + (this.debugVisible ? 1 : 0);
 
     if (this.cursors.up.isDown) {
       this.moveTimer = 0;
@@ -222,31 +208,25 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   private updateHighlight(): void {
-    const changeGradeIdx = this.modes.length;
-    const debugIdx = this.modes.length + 1;
+    const debugIdx = this.modes.length;
 
     for (let i = 0; i < this.btnBgs.length; i++) {
-      const isSpecial = i >= changeGradeIdx;
       const isDebug = i === debugIdx;
       if (i === this.selectedIndex) {
         this.btnBgs[i].setFillStyle(0x1e3a5f);
         this.btnBgs[i].setStrokeStyle(isDebug ? 1 : 2, 0x00ff88);
         this.btnLabels[i].setColor('#ffd700');
       } else {
-        this.btnBgs[i].setFillStyle(isSpecial ? 0x1a1a1a : COLOR_CELL);
+        this.btnBgs[i].setFillStyle(isDebug ? 0x1a1a1a : COLOR_CELL);
         this.btnBgs[i].setStrokeStyle(isDebug ? 1 : 2, isDebug ? 0x555555 : 0xffd700);
-        this.btnLabels[i].setColor(isSpecial ? (isDebug ? '#555555' : '#aaaaaa') : '#ffffff');
+        this.btnLabels[i].setColor(isDebug ? '#555555' : '#ffffff');
       }
     }
   }
 
   private confirmSelection(): void {
-    const changeGradeIdx = this.modes.length;
-
-    if (this.selectedIndex < changeGradeIdx) {
+    if (this.selectedIndex < this.modes.length) {
       this.scene.start('CharacterSelect', { mode: this.modes[this.selectedIndex].mode, grade: this.grade });
-    } else if (this.selectedIndex === changeGradeIdx) {
-      this.scene.start('GradeSelect');
     } else if (this.debugVisible) {
       this.scene.start('Debug');
     }
