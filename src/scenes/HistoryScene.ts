@@ -5,6 +5,20 @@ import { getRecentGames } from '../game/state/Persistence';
 import { MODE_LABELS } from '../game/logic/GradeConfig';
 import type { GameRecord } from '../game/state/Persistence';
 
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMs / 3600000);
+  const days = Math.floor(diffMs / 86400000);
+  const weeks = Math.floor(days / 7);
+
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} mins ago`;
+  if (hours < 24) return `${hours} hours ago`;
+  if (days < 7) return `${days} days ago`;
+  return `${weeks} weeks ago`;
+}
+
 export class HistoryScene extends Phaser.Scene {
   constructor() {
     super({ key: 'History' });
@@ -82,11 +96,8 @@ export class HistoryScene extends Phaser.Scene {
       fontStyle: 'bold',
     });
 
-    // Date
-    const dateStr = new Date(game.date).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric',
-    });
-    this.add.text(90, y + 30, `${dateStr} \u2022 Level ${game.levelReached}`, {
+    // Date (relative)
+    this.add.text(90, y + 30, `${timeAgo(game.date)} \u2022 Level ${game.levelReached}`, {
       fontSize: '13px',
       fontFamily: 'Arial',
       color: '#888888',
@@ -98,13 +109,6 @@ export class HistoryScene extends Phaser.Scene {
       fontFamily: 'Arial',
       color: '#ffd700',
       fontStyle: 'bold',
-    });
-
-    // Correct / Wrong
-    this.add.text(350, y + 34, `\u2714 ${game.correctAnswers}  \u2718 ${game.wrongAnswers}`, {
-      fontSize: '13px',
-      fontFamily: 'Arial',
-      color: '#aaaaaa',
     });
 
     // Deaths summary

@@ -346,6 +346,7 @@ export class GameScene extends Phaser.Scene {
     this.confirmOverlay = [bg, dialog, title, yesBg, yesText, noBg, noText];
 
     yesBg.on('pointerdown', () => {
+      this.saveGameRecord();
       this.scene.start('MainMenu');
     });
 
