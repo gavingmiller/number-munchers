@@ -47,24 +47,24 @@ export interface PlayerData {
 
 const STORAGE_KEY = 'numberMunchers_player';
 
-export const DEFAULT_CHARACTER: CharacterType = 'claude';
+export const DEFAULT_CHARACTER: CharacterType = 'box';
 
 export const CHARACTER_PRICES: Record<CharacterType, number> = {
-  claude: 0,
-  box: 100,
-  axolotl: 250,
-  marshmallow: 500,
+  box: 0,
+  axolotl: 100,
+  marshmallow: 250,
+  electricmouse: 500,
   robot: 1000,
-  electricmouse: 2000,
-  mrpickle: 3500,
-  nyancat: 5000,
+  mrpickle: 2000,
+  nyancat: 3500,
+  claude: 5000,
   pusheen: 7500,
 };
 
 /** Characters ordered by unlock price for display. */
 export const CHARACTER_UNLOCK_ORDER: CharacterType[] = [
-  'claude', 'box', 'axolotl', 'marshmallow', 'robot',
-  'electricmouse', 'mrpickle', 'nyancat', 'pusheen',
+  'box', 'axolotl', 'marshmallow', 'electricmouse', 'robot',
+  'mrpickle', 'nyancat', 'claude', 'pusheen',
 ];
 
 // ── Persistence Functions ──

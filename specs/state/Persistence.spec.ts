@@ -83,10 +83,10 @@ describe('Persistence', () => {
   });
 
   it('getAvailableStars returns totalStars minus spentStars', () => {
-    addGameRecord(makeRecord({ starsEarned: 100 }));
+    addGameRecord(makeRecord({ starsEarned: 200 }));
+    expect(getAvailableStars()).toBe(200);
+    unlockCharacter('axolotl'); // costs 100
     expect(getAvailableStars()).toBe(100);
-    unlockCharacter('box'); // costs 100
-    expect(getAvailableStars()).toBe(0);
   });
 
   it('getTotalStars returns lifetime total', () => {
@@ -106,37 +106,38 @@ describe('Character Unlocks', () => {
   });
 
   it('non-default characters start locked', () => {
-    expect(isCharacterUnlocked('box')).toBe(false);
+    expect(isCharacterUnlocked('claude')).toBe(false);
     expect(isCharacterUnlocked('pusheen')).toBe(false);
   });
 
   it('unlockCharacter succeeds with enough stars', () => {
-    addGameRecord(makeRecord({ starsEarned: 100 }));
-    const result = unlockCharacter('box');
+    addGameRecord(makeRecord({ starsEarned: 200 }));
+    const result = unlockCharacter('axolotl');
     expect(result).toBe(true);
-    expect(isCharacterUnlocked('box')).toBe(true);
-    expect(getAvailableStars()).toBe(100 - CHARACTER_PRICES.box);
+    expect(isCharacterUnlocked('axolotl')).toBe(true);
+    expect(getAvailableStars()).toBe(200 - CHARACTER_PRICES.axolotl);
   });
 
   it('unlockCharacter fails without enough stars', () => {
     addGameRecord(makeRecord({ starsEarned: 5 }));
-    const result = unlockCharacter('box'); // costs 25
+    const result = unlockCharacter('axolotl'); // costs 100
     expect(result).toBe(false);
-    expect(isCharacterUnlocked('box')).toBe(false);
+    expect(isCharacterUnlocked('axolotl')).toBe(false);
   });
 
   it('unlockCharacter fails if already unlocked', () => {
-    addGameRecord(makeRecord({ starsEarned: 100 }));
-    unlockCharacter('box');
-    const result = unlockCharacter('box'); // already unlocked
+    addGameRecord(makeRecord({ starsEarned: 200 }));
+    unlockCharacter('axolotl');
+    const result = unlockCharacter('axolotl'); // already unlocked
     expect(result).toBe(false);
     // Stars should not be double-deducted
-    expect(getAvailableStars()).toBe(100 - CHARACTER_PRICES.box);
+    expect(getAvailableStars()).toBe(200 - CHARACTER_PRICES.axolotl);
   });
 
   it('CHARACTER_PRICES has prices for all 9 characters', () => {
     expect(Object.keys(CHARACTER_PRICES)).toHaveLength(9);
-    expect(CHARACTER_PRICES.claude).toBe(0);
+    expect(CHARACTER_PRICES.box).toBe(0);
+    expect(CHARACTER_PRICES.claude).toBe(5000);
     expect(CHARACTER_PRICES.pusheen).toBe(7500);
   });
 });
