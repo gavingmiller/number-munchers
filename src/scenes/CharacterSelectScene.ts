@@ -81,10 +81,24 @@ export class CharacterSelectScene extends Phaser.Scene {
       this.createCharacterCard(idx, x, y, cardW, cardH, opt.label, opt.type);
     }
 
+    // Back button
+    const backBg = this.add.rectangle(centerX, CANVAS_HEIGHT - 70, 200, 50, 0x1e3a5f)
+      .setStrokeStyle(2, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(centerX, CANVAS_HEIGHT - 70, 'Back', {
+      fontSize: '24px',
+      fontFamily: 'Arial',
+      color: '#ffd700',
+      fontStyle: 'bold',
+    }).setOrigin(0.5);
+    backBg.on('pointerdown', () => this.scene.start('MainMenu'));
+
     // Keyboard input
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+      const escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+      escKey.on('down', () => this.scene.start('MainMenu'));
     }
 
     // Set initial highlight
