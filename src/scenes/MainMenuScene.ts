@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { GameMode, GradeLevel } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { getModesForGrade, MODE_LABELS, GRADE_CONFIG, getModeExample } from '../game/logic/GradeConfig';
+import { getAvailableStars } from '../game/state/Persistence';
 
 interface ModeOption {
   label: string;
@@ -54,6 +55,39 @@ export class MainMenuScene extends Phaser.Scene {
       fontStyle: 'bold',
       align: 'center',
     }).setOrigin(0.5);
+
+    // Star balance (top right)
+    this.add.text(CANVAS_WIDTH - 20, 30, `\u2B50 ${getAvailableStars()}`, {
+      fontSize: '22px',
+      fontFamily: 'Arial',
+      color: '#ffd700',
+      fontStyle: 'bold',
+    }).setOrigin(1, 0);
+
+    // History & Shop buttons (top area)
+    const navBtnW = 120;
+    const navBtnH = 40;
+    const navY = 30;
+
+    const histBg = this.add.rectangle(30 + navBtnW / 2, navY + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
+      .setStrokeStyle(1, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(30 + navBtnW / 2, navY + navBtnH / 2, 'History', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: '#aaaaaa',
+    }).setOrigin(0.5);
+    histBg.on('pointerdown', () => this.scene.start('History'));
+
+    const shopBg = this.add.rectangle(30 + navBtnW + 15 + navBtnW / 2, navY + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
+      .setStrokeStyle(1, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(30 + navBtnW + 15 + navBtnW / 2, navY + navBtnH / 2, 'Shop', {
+      fontSize: '16px',
+      fontFamily: 'Arial',
+      color: '#aaaaaa',
+    }).setOrigin(0.5);
+    shopBg.on('pointerdown', () => this.scene.start('Shop'));
 
     // Grade indicator + subtitle
     this.add.text(centerX, 280, `${GRADE_CONFIG[this.grade].label} — Choose a game mode`, {

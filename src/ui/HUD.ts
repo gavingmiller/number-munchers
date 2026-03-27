@@ -18,8 +18,8 @@ export class HUD {
       .setScrollFactor(0)
       .setDepth(8);
 
-    // Score on left
-    this.scoreTxt = this.scene.add.text(20, HUD_Y + HUD_H / 2, `Score: ${this.formatScore(state.score.current)}`, {
+    // Stars on left
+    this.scoreTxt = this.scene.add.text(20, HUD_Y + HUD_H / 2, `\u2B50 ${state.starsEarned}`, {
       fontSize: '28px',
       fontFamily: 'Arial',
       color: COLOR_HUD_TEXT,
@@ -50,7 +50,7 @@ export class HUD {
   }
 
   update(state: GameState): void {
-    this.scoreTxt.setText(`Score: ${this.formatScore(state.score.current)}`);
+    this.scoreTxt.setText(`\u2B50 ${state.starsEarned}`);
     this.levelTxt.setText(`Lv ${state.level}`);
     this.livesTxt?.setText(this.heartsString(state.lives));
   }

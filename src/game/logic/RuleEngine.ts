@@ -24,11 +24,13 @@ function evaluateEquation(expr: string): number {
   if (match) return Number(match[1]) - Number(match[2]);
   match = cleaned.match(/^(\d+)[×x*](\d+)$/);
   if (match) return Number(match[1]) * Number(match[2]);
+  match = cleaned.match(/^(\d+)[÷\/](\d+)$/);
+  if (match) return Number(match[1]) / Number(match[2]);
   return NaN;
 }
 
 export function isCorrect(value: number | string, rule: Rule): boolean {
-  if (rule.mode === 'equalities' || rule.mode === 'sums') {
+  if (rule.mode === 'equalities' || rule.mode === 'sums' || rule.mode === 'differences' || rule.mode === 'division') {
     if (typeof value === 'string') {
       const result = evaluateEquation(value);
       return !Number.isNaN(result) && result === rule.target!;
@@ -36,7 +38,7 @@ export function isCorrect(value: number | string, rule: Rule): boolean {
     return value === rule.target!;
   }
 
-  if (rule.mode === 'missing_addends') {
+  if (rule.mode === 'missing_addends' || rule.mode === 'missing_factors') {
     // For missing addends, cells are equation strings; correctness is pre-computed by grid generator
     // But if called directly, evaluate the blank value
     if (typeof value === 'string') {
@@ -63,25 +65,56 @@ export function isCorrect(value: number | string, rule: Rule): boolean {
   }
 }
 
-/** Extract the blank value from a missing addend equation like "_ + 3 = 10" → 7 */
+/** Extract the blank value from a missing number equation like "_ + 3 = 10" → 7 or "_ × 3 = 18" → 6 */
 export function extractBlankValue(expr: string): number {
   const cleaned = expr.replace(/\s/g, '');
-  // Pattern: _+a=b or _-a=b or a+_=b or a-_=b
+  // Addition patterns: _+a=b or a+_=b
   let match = cleaned.match(/^_\+(\d+)=(\d+)$/);
   if (match) return Number(match[2]) - Number(match[1]);
-  match = cleaned.match(/^_-(\d+)=(\d+)$/);
-  if (match) return Number(match[2]) + Number(match[1]);
   match = cleaned.match(/^(\d+)\+_=(\d+)$/);
   if (match) return Number(match[2]) - Number(match[1]);
+  // Subtraction patterns: _-a=b or a-_=b
+  match = cleaned.match(/^_-(\d+)=(\d+)$/);
+  if (match) return Number(match[2]) + Number(match[1]);
   match = cleaned.match(/^(\d+)-_=(\d+)$/);
   if (match) return Number(match[1]) - Number(match[2]);
+  // Multiplication patterns: _×a=b or a×_=b
+  match = cleaned.match(/^_[×x*](\d+)=(\d+)$/);
+  if (match) return Number(match[2]) / Number(match[1]);
+  match = cleaned.match(/^(\d+)[×x*]_=(\d+)$/);
+  if (match) return Number(match[2]) / Number(match[1]);
   return NaN;
 }
 
 /** Generate a missing addend equation where the blank equals the target. */
-export function generateMissingAddendEquation(target: number, grade?: GradeLevel): string {
-  const maxSum = (grade && grade <= 1) ? 20 : 100;
-  // _ + a = b, where blank = target
+export function generateMissingAddendEquation(target: number, grade?: GradeLevel, level?: number): string {
+  let maxSum: number;
+  if (grade && grade <= 1) {
+    maxSum = 20;
+  } else if (grade && grade <= 2) {
+    // Grade 2 progression: levels 1-3 → 20, levels 4-6 → 30, levels 7+ → 50
+    if (level && level >= 7) maxSum = 50;
+    else if (level && level >= 4) maxSum = 30;
+    else maxSum = 20;
+  } else {
+    maxSum = 100;
+  }
+  // Grade 3+ can include subtraction variants (~50% chance)
+  if (grade && grade >= 3 && Math.random() < 0.5) {
+    // Subtraction: _ - a = b where blank = target, so a = target - b, pick b first
+    // Or: a - _ = b where blank = target, so a = target + b
+    if (Math.random() < 0.5) {
+      // _ - a = b: blank = target, pick a randomly, b = target - a
+      const a = randomInt(1, Math.max(1, target - 1));
+      const b = target - a;
+      if (b >= 0) return `_ - ${a} = ${b}`;
+    }
+    // a - _ = b: blank = target, pick b randomly, a = target + b
+    const b = randomInt(0, Math.min(maxSum - target, 20));
+    const a = target + b;
+    if (a <= maxSum) return `${a} - _ = ${b}`;
+  }
+  // Addition: _ + a = b, where blank = target
   const a = randomInt(1, Math.max(1, maxSum - target));
   const b = target + a;
   if (b > maxSum) {
@@ -97,6 +130,49 @@ export function generateWrongMissingAddendEquation(target: number, grade?: Grade
   let wrongTarget = target + randomInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
   if (wrongTarget < 1) wrongTarget = target + randomInt(1, 5);
   return generateMissingAddendEquation(wrongTarget, grade);
+}
+
+/** Generate a subtraction equation string that equals the target. */
+export function generateDifferenceEquation(target: number, grade?: GradeLevel): string {
+  const maxVal = (grade && grade <= 2) ? 100 : 200;
+  const a = randomInt(target, Math.min(target + 20, maxVal));
+  const b = a - target;
+  return `${a}-${b}`;
+}
+
+/** Generate a subtraction equation string that does NOT equal the target. */
+export function generateWrongDifferenceEquation(target: number, grade?: GradeLevel): string {
+  let wrongTarget = target + randomInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
+  if (wrongTarget < 0) wrongTarget = target + randomInt(1, 5);
+  return generateDifferenceEquation(wrongTarget, grade);
+}
+
+/** Generate a division equation string that equals the target. Always clean integer division. */
+export function generateDivisionEquation(target: number, _grade?: GradeLevel): string {
+  const divisor = randomInt(2, 12);
+  const dividend = target * divisor;
+  return `${dividend}÷${divisor}`;
+}
+
+/** Generate a division equation string that does NOT equal the target. */
+export function generateWrongDivisionEquation(target: number, grade?: GradeLevel): string {
+  let wrongTarget = target + randomInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
+  if (wrongTarget < 1) wrongTarget = target + randomInt(1, 5);
+  return generateDivisionEquation(wrongTarget, grade);
+}
+
+/** Generate a missing factor equation where the blank equals the target. */
+export function generateMissingFactorEquation(target: number, _grade?: GradeLevel): string {
+  const a = randomInt(2, 12);
+  const product = target * a;
+  return Math.random() < 0.5 ? `_ × ${a} = ${product}` : `${a} × _ = ${product}`;
+}
+
+/** Generate a missing factor equation where the blank does NOT equal the target. */
+export function generateWrongMissingFactorEquation(target: number, grade?: GradeLevel): string {
+  let wrongTarget = target + randomInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
+  if (wrongTarget < 1) wrongTarget = target + randomInt(1, 5);
+  return generateMissingFactorEquation(wrongTarget, grade);
 }
 
 /** Generate a random equation string that equals the target. */
@@ -160,7 +236,9 @@ export function getWrongExplanation(value: number | string, rule: Rule): string 
         ? `${value} is not an even number`
         : `${value} is not an odd number`;
     case 'sums':
-    case 'equalities': {
+    case 'equalities':
+    case 'differences':
+    case 'division': {
       if (typeof value === 'string') {
         const result = evaluateEquation(value);
         if (!Number.isNaN(result)) {
@@ -169,7 +247,8 @@ export function getWrongExplanation(value: number | string, rule: Rule): string 
       }
       return `${value} does not equal ${rule.target}`;
     }
-    case 'missing_addends': {
+    case 'missing_addends':
+    case 'missing_factors': {
       if (typeof value === 'string') {
         const blank = extractBlankValue(value);
         if (!Number.isNaN(blank)) {
@@ -191,8 +270,15 @@ export function generateRule(mode: GameMode, level: number, grade?: GradeLevel):
       return { mode, target, description: `Equals ${target}` };
     }
     case 'missing_addends': {
-      const maxVal = (grade && grade <= 1) ? 20 : 100;
-      const target = randomInt(1, Math.min(maxVal - 1, 5 + level * 2));
+      let maxTarget: number;
+      if (grade && grade <= 1) {
+        maxTarget = Math.min(19, 5 + level * 2);
+      } else if (grade && grade <= 2) {
+        maxTarget = Math.min(10, 3 + level); // grade 2: 1-4 at level 1, up to 1-10 at level 7+
+      } else {
+        maxTarget = Math.min(99, 5 + level * 2);
+      }
+      const target = randomInt(1, maxTarget);
       return { mode, target, description: `Missing number is ${target}` };
     }
     case 'even_odd': {
@@ -223,6 +309,21 @@ export function generateRule(mode: GameMode, level: number, grade?: GradeLevel):
       const maxVal = 5 + level * 3;
       const target = randomInt(2, maxVal);
       return { mode, target, description: `Equals ${target}` };
+    }
+    case 'differences': {
+      const maxVal = (grade && grade <= 2) ? 20 : 5 + level * 3;
+      const target = randomInt(1, maxVal);
+      return { mode, target, description: `Equals ${target}` };
+    }
+    case 'division': {
+      const maxTarget = Math.min(2 + level, 12);
+      const target = randomInt(1, maxTarget);
+      return { mode, target, description: `Equals ${target}` };
+    }
+    case 'missing_factors': {
+      const maxTarget = Math.min(2 + level, 12);
+      const target = randomInt(1, maxTarget);
+      return { mode, target, description: `Missing number is ${target}` };
     }
   }
 }

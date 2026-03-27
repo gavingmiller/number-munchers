@@ -2,8 +2,7 @@ import Phaser from 'phaser';
 import type { GameMode, GradeLevel, CharacterType } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { drawCharacter } from '../ui/CharacterSprites';
-
-// TODO: Build a progression system (unlockable characters, level milestones, etc.)
+import { isCharacterUnlocked, CHARACTER_PRICES, getAvailableStars } from '../game/state/Persistence';
 
 interface CharSelectData {
   mode: GameMode;
@@ -156,6 +155,7 @@ export class CharacterSelectScene extends Phaser.Scene {
 
   private confirmSelection(): void {
     const character = CHARACTERS[this.selectedIndex].type;
+    if (!isCharacterUnlocked(character)) return; // locked characters can't be selected
     this.scene.start('Game', { mode: this.selectedMode, character, grade: this.selectedGrade });
   }
 
@@ -184,6 +184,25 @@ export class CharacterSelectScene extends Phaser.Scene {
     // Character preview sprite
     const container = this.add.container(cx, cy + 15);
     drawCharacter(this, container, character, 4);
+
+    // Lock overlay for locked characters
+    const unlocked = isCharacterUnlocked(character);
+    if (!unlocked) {
+      // Dim the card
+      this.add.rectangle(cx, cy, w, h, 0x000000, 0.5).setDepth(1);
+      // Lock icon
+      this.add.text(cx, cy - 10, '\uD83D\uDD12', {
+        fontSize: '36px',
+      }).setOrigin(0.5).setDepth(2);
+      // Price
+      const price = CHARACTER_PRICES[character];
+      this.add.text(cx, cy + 30, `\u2B50 ${price}`, {
+        fontSize: '18px',
+        fontFamily: 'Arial',
+        color: '#ffd700',
+        fontStyle: 'bold',
+      }).setOrigin(0.5).setDepth(2);
+    }
 
     bg.on('pointerover', () => {
       this.selectedIndex = index;

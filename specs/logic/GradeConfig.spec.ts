@@ -10,24 +10,24 @@ describe('GRADE_CONFIG', () => {
     }
   });
 
-  it('grade 1 has sums, missing_addends, and even_odd', () => {
-    expect(GRADE_CONFIG[1].modes).toEqual(['sums', 'missing_addends', 'even_odd']);
+  it('grade 1 has sums and even_odd', () => {
+    expect(GRADE_CONFIG[1].modes).toEqual(['sums', 'even_odd']);
   });
 
-  it('grade 2 has sums, missing_addends, and even_odd', () => {
-    expect(GRADE_CONFIG[2].modes).toEqual(['sums', 'missing_addends', 'even_odd']);
+  it('grade 2 has sums, even_odd, and differences', () => {
+    expect(GRADE_CONFIG[2].modes).toEqual(['sums', 'even_odd', 'differences']);
   });
 
-  it('grade 3 has sums, multiples, and equalities', () => {
-    expect(GRADE_CONFIG[3].modes).toEqual(['sums', 'multiples', 'equalities']);
+  it('grade 3 has sums, missing_addends, multiples, equalities, differences, and missing_factors', () => {
+    expect(GRADE_CONFIG[3].modes).toEqual(['sums', 'missing_addends', 'multiples', 'equalities', 'differences', 'missing_factors']);
   });
 
-  it('grade 4 has multiples, factors, primes, and equalities', () => {
-    expect(GRADE_CONFIG[4].modes).toEqual(['multiples', 'factors', 'primes', 'equalities']);
+  it('grade 4 has multiples, factors, primes, equalities, division, and missing_factors', () => {
+    expect(GRADE_CONFIG[4].modes).toEqual(['multiples', 'factors', 'primes', 'equalities', 'division', 'missing_factors']);
   });
 
-  it('grade 5 has same modes as grade 4', () => {
-    expect(GRADE_CONFIG[5].modes).toEqual(GRADE_CONFIG[4].modes);
+  it('grade 5 has multiples, factors, primes, equalities, and division', () => {
+    expect(GRADE_CONFIG[5].modes).toEqual(['multiples', 'factors', 'primes', 'equalities', 'division']);
   });
 
   it('grade 1 does not include factors or primes', () => {
@@ -65,13 +65,16 @@ describe('getGradeNumberRange', () => {
 });
 
 describe('MODE_LABELS', () => {
-  it('has labels for all 7 modes', () => {
+  it('has labels for all 10 modes', () => {
     expect(MODE_LABELS.sums).toBe('Sums');
-    expect(MODE_LABELS.missing_addends).toBe('Missing Addends');
+    expect(MODE_LABELS.missing_addends).toBe('Missing Number');
     expect(MODE_LABELS.even_odd).toBe('Even or Odd');
     expect(MODE_LABELS.multiples).toBe('Multiples');
     expect(MODE_LABELS.factors).toBe('Factors');
     expect(MODE_LABELS.primes).toBe('Prime Numbers');
     expect(MODE_LABELS.equalities).toBe('Equalities');
+    expect(MODE_LABELS.differences).toBe('Differences');
+    expect(MODE_LABELS.missing_factors).toBe('Missing Factors');
+    expect(MODE_LABELS.division).toBe('Division');
   });
 });

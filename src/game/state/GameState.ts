@@ -6,6 +6,8 @@ import type {
   Direction,
   TroggleType,
   TroggleData,
+  GameDeath,
+  ProblemResult,
 } from '../../types.ts';
 import { ROWS, COLS, cellIndex } from '../../types.ts';
 import { getLevelConfig } from '../logic/DifficultyTable.ts';
@@ -92,11 +94,18 @@ function deactivateTroggleOnExit(
   };
 }
 
+export interface SessionCarry {
+  starsEarned: number;
+  deaths: GameDeath[];
+  problems: ProblemResult[];
+}
+
 export function createLevelState(
   mode: GameMode,
   level: number,
   previousScore?: ScoreData,
   grade?: GradeLevel,
+  carry?: SessionCarry,
 ): GameState {
   const effectiveGrade = grade ?? 4;
   const config = getLevelConfig(level, mode, effectiveGrade);
@@ -152,6 +161,9 @@ export function createLevelState(
     correctCellsRemaining,
     tickCount: 0,
     playerMoveCount: 0,
+    starsEarned: carry?.starsEarned ?? 0,
+    deaths: carry?.deaths ?? [],
+    problems: carry?.problems ?? [],
   };
 }
 
@@ -175,6 +187,13 @@ export function applyMunch(state: GameState): GameState {
 
   if (cell.state !== 'filled') return state;
 
+  const problem: ProblemResult = {
+    level: state.level,
+    value: cell.value,
+    rule: state.rule.description,
+    correct: cell.isCorrect,
+  };
+
   if (cell.isCorrect) {
     const newGrid = [...state.grid];
     newGrid[idx] = { ...cell, state: 'blank' };
@@ -195,6 +214,8 @@ export function applyMunch(state: GameState): GameState {
       lives: newLives,
       correctCellsRemaining: newRemaining,
       status: newStatus,
+      starsEarned: state.starsEarned + 1,
+      problems: [...state.problems, problem],
     };
   }
 
@@ -203,6 +224,7 @@ export function applyMunch(state: GameState): GameState {
     ...state,
     status: 'life-lost',
     lives: state.lives - 1,
+    problems: [...state.problems, problem],
   };
 }
 

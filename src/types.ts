@@ -2,7 +2,7 @@
 // Shared types — NO Phaser imports. Used by both game/ and scenes/.
 // ============================================================
 
-export type GameMode = 'sums' | 'missing_addends' | 'even_odd' | 'multiples' | 'factors' | 'primes' | 'equalities';
+export type GameMode = 'sums' | 'missing_addends' | 'even_odd' | 'multiples' | 'factors' | 'primes' | 'equalities' | 'differences' | 'missing_factors' | 'division';
 export type GradeLevel = 1 | 2 | 3 | 4 | 5;
 export type CharacterType = 'claude' | 'box' | 'axolotl' | 'electricmouse' | 'marshmallow' | 'robot' | 'nyancat' | 'pusheen' | 'mrpickle';
 export type TroggleType = 'reggie' | 'fangs' | 'squirt' | 'ember' | 'bonehead';
@@ -49,6 +49,19 @@ export interface ScoreData {
   pointsPerCorrect: number;
 }
 
+export interface GameDeath {
+  level: number;
+  cause: 'wrong_answer' | 'troggle';
+  detail: string;
+}
+
+export interface ProblemResult {
+  level: number;
+  value: string | number;
+  rule: string;
+  correct: boolean;
+}
+
 export interface GameState {
   mode: GameMode;
   grade: GradeLevel;
@@ -63,6 +76,9 @@ export interface GameState {
   correctCellsRemaining: number;
   tickCount: number;
   playerMoveCount: number; // total player moves taken this level
+  starsEarned: number;     // correct answers this game session
+  deaths: GameDeath[];     // death events this game session
+  problems: ProblemResult[]; // all problem attempts this game session
 }
 
 export interface LevelConfig {

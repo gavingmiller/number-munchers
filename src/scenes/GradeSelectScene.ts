@@ -9,11 +9,11 @@ interface GradeOption {
 }
 
 const GRADES: GradeOption[] = [
-  { grade: 1, label: 'Grade 1', hint: 'Sums, Missing Addends & Even/Odd (to 20)' },
-  { grade: 2, label: 'Grade 2', hint: 'Sums, Missing Addends & Even/Odd' },
-  { grade: 3, label: 'Grade 3', hint: 'Sums, Multiples & Equalities' },
-  { grade: 4, label: 'Grade 4', hint: 'Factors, Primes & Equalities' },
-  { grade: 5, label: 'Grade 5', hint: 'Advanced (numbers to 200)' },
+  { grade: 1, label: 'Grade 1', hint: 'Sums & Even/Odd (to 20)' },
+  { grade: 2, label: 'Grade 2', hint: 'Sums, Differences & Even/Odd' },
+  { grade: 3, label: 'Grade 3', hint: 'Sums, Differences, Multiples & More' },
+  { grade: 4, label: 'Grade 4', hint: 'Factors, Primes, Division & Equalities' },
+  { grade: 5, label: 'Grade 5', hint: 'Advanced with Division (to 200)' },
 ];
 
 export class GradeSelectScene extends Phaser.Scene {

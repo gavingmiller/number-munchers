@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isCorrect, generateRule, generateEquation, generateWrongEquation, extractBlankValue, generateMissingAddendEquation, generateWrongMissingAddendEquation, FACTORS_TARGET_POOLS } from '../../src/game/logic/RuleEngine.ts';
+import { isCorrect, generateRule, generateEquation, generateWrongEquation, extractBlankValue, generateMissingAddendEquation, generateWrongMissingAddendEquation, generateDifferenceEquation, generateWrongDifferenceEquation, generateDivisionEquation, generateWrongDivisionEquation, generateMissingFactorEquation, generateWrongMissingFactorEquation, FACTORS_TARGET_POOLS } from '../../src/game/logic/RuleEngine.ts';
 import type { Rule } from '../../src/types.ts';
 
 describe('isCorrect', () => {
@@ -265,5 +265,207 @@ describe('generateEquation — grade restriction', () => {
     }
     // Should see more than just addition
     expect(ops.size).toBeGreaterThan(1);
+  });
+});
+
+describe('isCorrect — differences mode', () => {
+  it('evaluates subtraction equation strings', () => {
+    const rule: Rule = { mode: 'differences', target: 5, description: 'Equals 5' };
+    expect(isCorrect('12-7', rule)).toBe(true);
+    expect(isCorrect('9-4', rule)).toBe(true);
+    expect(isCorrect('10-3', rule)).toBe(false);
+  });
+});
+
+describe('isCorrect — division mode', () => {
+  it('evaluates division equation strings', () => {
+    const rule: Rule = { mode: 'division', target: 4, description: 'Equals 4' };
+    expect(isCorrect('12÷3', rule)).toBe(true);
+    expect(isCorrect('20÷5', rule)).toBe(true);
+    expect(isCorrect('15÷3', rule)).toBe(false);
+  });
+});
+
+describe('isCorrect — missing_factors mode', () => {
+  it('evaluates blank value in multiplication equation', () => {
+    const rule: Rule = { mode: 'missing_factors', target: 6, description: 'Missing number is 6' };
+    expect(isCorrect('_ × 3 = 18', rule)).toBe(true);
+    expect(isCorrect('3 × _ = 18', rule)).toBe(true);
+    expect(isCorrect('_ × 4 = 20', rule)).toBe(false); // blank = 5, not 6
+  });
+});
+
+describe('generateDifferenceEquation', () => {
+  it('produces a subtraction equation that equals target', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateDifferenceEquation(5);
+      const rule: Rule = { mode: 'differences', target: 5, description: 'Equals 5' };
+      expect(isCorrect(eq, rule)).toBe(true);
+    }
+  });
+
+  it('always contains a minus sign', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateDifferenceEquation(3);
+      expect(eq).toContain('-');
+    }
+  });
+});
+
+describe('generateWrongDifferenceEquation', () => {
+  it('produces a subtraction equation that does NOT equal target', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateWrongDifferenceEquation(5);
+      const rule: Rule = { mode: 'differences', target: 5, description: 'Equals 5' };
+      expect(isCorrect(eq, rule)).toBe(false);
+    }
+  });
+});
+
+describe('generateDivisionEquation', () => {
+  it('produces a division equation that equals target', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateDivisionEquation(4);
+      const rule: Rule = { mode: 'division', target: 4, description: 'Equals 4' };
+      expect(isCorrect(eq, rule)).toBe(true);
+    }
+  });
+
+  it('always produces clean integer results', () => {
+    for (let i = 0; i < 50; i++) {
+      const target = Math.floor(Math.random() * 12) + 1;
+      const eq = generateDivisionEquation(target);
+      const match = eq.match(/^(\d+)÷(\d+)$/);
+      expect(match).not.toBeNull();
+      const result = Number(match![1]) / Number(match![2]);
+      expect(Number.isInteger(result)).toBe(true);
+    }
+  });
+
+  it('always contains ÷', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateDivisionEquation(3);
+      expect(eq).toContain('÷');
+    }
+  });
+});
+
+describe('generateWrongDivisionEquation', () => {
+  it('produces a division equation that does NOT equal target', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateWrongDivisionEquation(4);
+      const rule: Rule = { mode: 'division', target: 4, description: 'Equals 4' };
+      expect(isCorrect(eq, rule)).toBe(false);
+    }
+  });
+});
+
+describe('generateMissingFactorEquation', () => {
+  it('produces equation where blank equals target', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateMissingFactorEquation(6);
+      const blank = extractBlankValue(eq);
+      expect(blank).toBe(6);
+    }
+  });
+
+  it('contains underscore and multiplication sign', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateMissingFactorEquation(3);
+      expect(eq).toContain('_');
+      expect(eq).toContain('×');
+    }
+  });
+});
+
+describe('generateWrongMissingFactorEquation', () => {
+  it('produces equation where blank does NOT equal target', () => {
+    for (let i = 0; i < 20; i++) {
+      const eq = generateWrongMissingFactorEquation(6);
+      const blank = extractBlankValue(eq);
+      expect(blank).not.toBe(6);
+    }
+  });
+});
+
+describe('extractBlankValue — multiplication patterns', () => {
+  it('extracts blank from _ × a = b', () => {
+    expect(extractBlankValue('_ × 3 = 18')).toBe(6);
+    expect(extractBlankValue('_×5=20')).toBe(4);
+  });
+
+  it('extracts blank from a × _ = b', () => {
+    expect(extractBlankValue('3 × _ = 18')).toBe(6);
+    expect(extractBlankValue('5×_=20')).toBe(4);
+  });
+});
+
+describe('generateRule — new modes', () => {
+  it('generates a differences rule', () => {
+    const rule = generateRule('differences', 1, 2);
+    expect(rule.mode).toBe('differences');
+    expect(rule.target).toBeDefined();
+    expect(rule.description).toMatch(/^Equals \d+$/);
+  });
+
+  it('generates a division rule', () => {
+    const rule = generateRule('division', 1, 4);
+    expect(rule.mode).toBe('division');
+    expect(rule.target).toBeDefined();
+    expect(rule.description).toMatch(/^Equals \d+$/);
+  });
+
+  it('generates a missing_factors rule', () => {
+    const rule = generateRule('missing_factors', 1, 3);
+    expect(rule.mode).toBe('missing_factors');
+    expect(rule.target).toBeDefined();
+    expect(rule.description).toMatch(/^Missing number is \d+$/);
+  });
+});
+
+describe('missing_addends — subtraction variants at grade 3+', () => {
+  it('grade 1 equations are addition only', () => {
+    for (let i = 0; i < 50; i++) {
+      const eq = generateMissingAddendEquation(5, 1);
+      expect(eq).toContain('+');
+      expect(eq).not.toMatch(/\d+-/); // no subtraction
+    }
+  });
+
+  it('grade 2 equations are addition only', () => {
+    for (let i = 0; i < 50; i++) {
+      const eq = generateMissingAddendEquation(5, 2);
+      expect(eq).toContain('+');
+      expect(eq).not.toMatch(/\d\s*-\s*_/);
+      expect(eq).not.toMatch(/_\s*-\s*\d/);
+    }
+  });
+
+  it('grade 2 equations stay within 20 by default', () => {
+    for (let i = 0; i < 50; i++) {
+      const eq = generateMissingAddendEquation(5, 2);
+      const match = eq.replace(/\s/g, '').match(/=(\d+)$/);
+      expect(match).not.toBeNull();
+      expect(Number(match![1])).toBeLessThanOrEqual(20);
+    }
+  });
+
+  it('grade 3 can produce subtraction equations', () => {
+    const ops = new Set<string>();
+    for (let i = 0; i < 100; i++) {
+      const eq = generateMissingAddendEquation(5, 3);
+      if (eq.includes('+')) ops.add('+');
+      if (eq.match(/\d\s*-\s*_/) || eq.match(/_\s*-\s*\d/)) ops.add('-');
+    }
+    expect(ops.has('-')).toBe(true);
+    expect(ops.has('+')).toBe(true);
+  });
+
+  it('grade 2 missing_addends target stays within 10', () => {
+    for (let i = 0; i < 50; i++) {
+      const rule = generateRule('missing_addends', 1, 2);
+      expect(rule.target).toBeLessThanOrEqual(4); // level 1: min(10, 3+1) = 4
+      expect(rule.target).toBeGreaterThanOrEqual(1);
+    }
   });
 });

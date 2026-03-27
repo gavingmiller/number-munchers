@@ -78,4 +78,44 @@ describe('generateGrid', () => {
       expect(cell.value as string).toContain('+');
     }
   });
+
+  it('differences grid produces subtraction equation strings', () => {
+    const diffRule: Rule = { mode: 'differences', target: 5, description: 'Equals 5' };
+    const grid = generateGrid(diffRule, { numberRangeMin: 1, numberRangeMax: 100 }, 2);
+    expect(grid).toHaveLength(30);
+    for (const cell of grid) {
+      expect(typeof cell.value).toBe('string');
+      expect(cell.value as string).toContain('-');
+    }
+    const correctCells = grid.filter((c) => c.isCorrect);
+    expect(correctCells.length).toBeGreaterThanOrEqual(19);
+    expect(correctCells.length).toBeLessThanOrEqual(23);
+  });
+
+  it('division grid produces division equation strings', () => {
+    const divRule: Rule = { mode: 'division', target: 4, description: 'Equals 4' };
+    const grid = generateGrid(divRule, { numberRangeMin: 1, numberRangeMax: 100 }, 4);
+    expect(grid).toHaveLength(30);
+    for (const cell of grid) {
+      expect(typeof cell.value).toBe('string');
+      expect(cell.value as string).toContain('÷');
+    }
+    const correctCells = grid.filter((c) => c.isCorrect);
+    expect(correctCells.length).toBeGreaterThanOrEqual(19);
+    expect(correctCells.length).toBeLessThanOrEqual(23);
+  });
+
+  it('missing_factors grid produces equation strings with underscore and multiplication', () => {
+    const mfRule: Rule = { mode: 'missing_factors', target: 3, description: 'Missing number is 3' };
+    const grid = generateGrid(mfRule, { numberRangeMin: 1, numberRangeMax: 100 }, 3);
+    expect(grid).toHaveLength(30);
+    for (const cell of grid) {
+      expect(typeof cell.value).toBe('string');
+      expect(cell.value as string).toContain('_');
+      expect(cell.value as string).toContain('×');
+    }
+    const correctCells = grid.filter((c) => c.isCorrect);
+    expect(correctCells.length).toBeGreaterThanOrEqual(19);
+    expect(correctCells.length).toBeLessThanOrEqual(23);
+  });
 });

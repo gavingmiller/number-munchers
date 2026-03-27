@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
-import type { GameState, Direction, GameMode, GradeLevel, ScoreData, CharacterType } from '../types';
+import type { GameState, Direction, GameMode, GradeLevel, ScoreData, CharacterType, GameDeath, ProblemResult } from '../types';
 import { createLevelState, applyMove, applyMunch, applyTroggleHit, applyTroggleTick } from '../game/state/GameState';
+import type { SessionCarry } from '../game/state/GameState';
+import { addGameRecord } from '../game/state/Persistence';
+import type { GameRecord } from '../game/state/Persistence';
 import { checkPlayerCell, checkPlayerTroggles } from '../game/logic/CollisionSystem';
 import { getWrongExplanation } from '../game/logic/RuleEngine';
 import { GridRenderer } from '../ui/GridRenderer';
@@ -25,6 +28,7 @@ interface GameSceneData {
   score?: ScoreData;
   character?: CharacterType;
   grade?: GradeLevel;
+  carry?: SessionCarry;
 }
 
 export class GameScene extends Phaser.Scene {
@@ -58,8 +62,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
-    const { mode, level, score, grade } = this.sceneData;
-    this.state = createLevelState(mode, level ?? 1, score, grade);
+    const { mode, level, score, grade, carry } = this.sceneData;
+    this.state = createLevelState(mode, level ?? 1, score, grade, carry);
     this.moveTimer = 0;
     this.gameTickTimer = 0;
     this.paused = false;
@@ -213,12 +217,21 @@ export class GameScene extends Phaser.Scene {
   }
 
   private triggerLifeLost(explanation?: string, caughtBy?: string): void {
+    // Track the death event
+    const death: GameDeath = {
+      level: this.state.level,
+      cause: caughtBy ? 'troggle' : 'wrong_answer',
+      detail: caughtBy ?? explanation ?? 'Unknown',
+    };
+    this.state = { ...this.state, deaths: [...this.state.deaths, death] };
+
     this.state = applyTroggleHit(this.state);
 
     if (this.state.lives <= 0) {
       this.state.status = 'game-over';
+      this.saveGameRecord();
       this.scene.stop();
-      this.scene.start('HiScore', { score: this.state.score.current });
+      this.scene.start('HiScore', { starsEarned: this.state.starsEarned });
       return;
     }
 
@@ -226,6 +239,24 @@ export class GameScene extends Phaser.Scene {
     this.hud.update(this.state);
     this.scene.pause();
     this.scene.launch('GameOver', { lives: this.state.lives, explanation, caughtBy });
+  }
+
+  private saveGameRecord(): void {
+    const record: GameRecord = {
+      id: `game-${Date.now()}`,
+      date: new Date().toISOString(),
+      grade: this.state.grade,
+      mode: this.state.mode,
+      character: this.sceneData.character ?? 'claude',
+      levelReached: this.state.level,
+      starsEarned: this.state.starsEarned,
+      totalAnswers: this.state.problems.length,
+      correctAnswers: this.state.problems.filter((p) => p.correct).length,
+      wrongAnswers: this.state.problems.filter((p) => !p.correct).length,
+      deaths: this.state.deaths,
+      problems: this.state.problems,
+    };
+    addGameRecord(record);
   }
 
   private handleLevelComplete(): void {
@@ -262,6 +293,11 @@ export class GameScene extends Phaser.Scene {
       score: this.state.score,
       character: this.sceneData.character,
       grade: this.sceneData.grade,
+      carry: {
+        starsEarned: this.state.starsEarned,
+        deaths: this.state.deaths,
+        problems: this.state.problems,
+      },
     });
   }
 

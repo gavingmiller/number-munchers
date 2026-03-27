@@ -1,6 +1,6 @@
 import type { CellData, Rule, GradeLevel } from '../../types.ts';
 import { ROWS, COLS } from '../../types.ts';
-import { isCorrect, generateEquation, generateWrongEquation, generateMissingAddendEquation, generateWrongMissingAddendEquation } from './RuleEngine.ts';
+import { isCorrect, generateEquation, generateWrongEquation, generateMissingAddendEquation, generateWrongMissingAddendEquation, generateDifferenceEquation, generateWrongDifferenceEquation, generateDivisionEquation, generateWrongDivisionEquation, generateMissingFactorEquation, generateWrongMissingFactorEquation } from './RuleEngine.ts';
 import { randomInt, shuffle } from './MathUtils.ts';
 
 export function generateGrid(
@@ -16,6 +16,18 @@ export function generateGrid(
 
   if (rule.mode === 'missing_addends') {
     return generateMissingAddendsGrid(rule, totalCells, targetCorrectCount, grade);
+  }
+
+  if (rule.mode === 'missing_factors') {
+    return generateExpressionGrid(rule, totalCells, targetCorrectCount, generateMissingFactorEquation, generateWrongMissingFactorEquation, grade);
+  }
+
+  if (rule.mode === 'differences') {
+    return generateExpressionGrid(rule, totalCells, targetCorrectCount, generateDifferenceEquation, generateWrongDifferenceEquation, grade);
+  }
+
+  if (rule.mode === 'division') {
+    return generateExpressionGrid(rule, totalCells, targetCorrectCount, generateDivisionEquation, generateWrongDivisionEquation, grade);
   }
 
   if (rule.mode === 'equalities' || rule.mode === 'sums') {
@@ -176,6 +188,56 @@ function generateNumberGrid(
     for (let col = 0; col < COLS; col++) {
       const idx = row * COLS + col;
       const entry = shuffledValues[idx];
+      cells.push({
+        row,
+        col,
+        value: entry.value,
+        state: 'filled',
+        isCorrect: entry.isCorrect,
+      });
+    }
+  }
+
+  return cells;
+}
+
+/** Generic expression grid generator — works for any mode with correct/wrong equation generators. */
+function generateExpressionGrid(
+  rule: Rule,
+  totalCells: number,
+  targetCorrectCount: number,
+  genCorrect: (target: number, grade?: GradeLevel) => string,
+  genWrong: (target: number, grade?: GradeLevel) => string,
+  grade?: GradeLevel,
+): CellData[] {
+  const target = rule.target!;
+
+  const allValues: { value: string; isCorrect: boolean }[] = [];
+
+  const usedCorrect = new Set<string>();
+  for (let i = 0; i < targetCorrectCount; i++) {
+    let eq = genCorrect(target, grade);
+    let attempts = 0;
+    while (usedCorrect.has(eq) && attempts < 10) {
+      eq = genCorrect(target, grade);
+      attempts++;
+    }
+    usedCorrect.add(eq);
+    allValues.push({ value: eq, isCorrect: true });
+  }
+
+  const incorrectCount = totalCells - targetCorrectCount;
+  for (let i = 0; i < incorrectCount; i++) {
+    allValues.push({ value: genWrong(target, grade), isCorrect: false });
+  }
+
+  const shuffled = shuffle(allValues);
+
+  const cells: CellData[] = [];
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const idx = row * COLS + col;
+      const entry = shuffled[idx];
       cells.push({
         row,
         col,
