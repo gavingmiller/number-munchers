@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { GameMode, GradeLevel } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { getModesForGrade, MODE_LABELS, GRADE_CONFIG, getModeExample } from '../game/logic/GradeConfig';
-import { getAvailableStars } from '../game/state/Persistence';
+import { getAvailableStars, loadPlayerData, savePlayerData } from '../game/state/Persistence';
 
 interface ModeOption {
   label: string;
@@ -172,6 +172,23 @@ export class MainMenuScene extends Phaser.Scene {
       debugBg.on('pointerdown', () => {
         this.selectedIndex = debugIdx;
         this.confirmSelection();
+      });
+
+      // Debug: Give 100k stars
+      const starsBtnY = debugY + gap * 0.7;
+      const starsBg = this.add.rectangle(centerX, starsBtnY, btnW, btnH * 0.75, 0x1a1a1a)
+        .setStrokeStyle(1, 0x555555)
+        .setInteractive({ useHandCursor: true });
+      this.add.text(centerX, starsBtnY, '\u2B50 +100,000 Stars', {
+        fontSize: '20px',
+        fontFamily: 'Arial',
+        color: '#555555',
+      }).setOrigin(0.5);
+      starsBg.on('pointerdown', () => {
+        const data = loadPlayerData();
+        data.unlocks.totalStars += 100000;
+        savePlayerData(data);
+        this.scene.restart({ grade: this.grade });
       });
     }
 
