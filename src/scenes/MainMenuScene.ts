@@ -67,11 +67,10 @@ export class MainMenuScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0, 0);
 
-    const shopBtnW = 90;
-    const shopBg = this.add.rectangle(20 + shopBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, shopBtnW, navBtnH, 0x1a1a1a)
+    const shopBg = this.add.rectangle(20 + navBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
       .setStrokeStyle(1, 0xffd700)
       .setInteractive({ useHandCursor: true });
-    this.add.text(20 + shopBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, 'Shop', {
+    this.add.text(20 + navBtnW / 2, 30 + navBtnH + 8 + navBtnH / 2, 'Shop', {
       fontSize: '14px',
       fontFamily: 'Arial',
       color: '#aaaaaa',
