@@ -11,6 +11,7 @@ import { DebugScene } from './scenes/DebugScene';
 import { LevelCompleteScene } from './scenes/LevelCompleteScene';
 import { HistoryScene } from './scenes/HistoryScene';
 import { ShopScene } from './scenes/ShopScene';
+import { SettingsScene } from './scenes/SettingsScene';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_BG } from './constants';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -22,7 +23,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, GradeSelectScene, MainMenuScene, CharacterSelectScene, GameScene, GameOverScene, LevelCompleteScene, CutsceneScene, HiScoreScene, HistoryScene, ShopScene, DebugScene],
+  scene: [BootScene, GradeSelectScene, MainMenuScene, CharacterSelectScene, GameScene, GameOverScene, LevelCompleteScene, CutsceneScene, HiScoreScene, HistoryScene, ShopScene, SettingsScene, DebugScene],
   input: {
     activePointers: 4,
   },

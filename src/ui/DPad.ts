@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { Direction } from '../types';
+import type { ControlStyle } from '../game/state/Persistence';
 import { DPAD_Y, DPAD_BTN_SIZE, CANVAS_WIDTH } from '../constants';
 
 interface DPadButton {
@@ -18,16 +19,18 @@ export class DPad {
     this.onDirection = onDirection;
   }
 
-  create(onMunch: () => void, showMunch = true): void {
-    const cx = CANVAS_WIDTH / 2;
+  create(onMunch: () => void, showMunch = true, style: ControlStyle = 'center'): void {
     const sz = DPAD_BTN_SIZE;
     const centerY = DPAD_Y + DPAD_BTN_SIZE * 2;
 
+    // D-pad center X depends on control style
+    const dpadCx = style === 'two-handed' ? 150 : CANVAS_WIDTH / 2;
+
     const btnDefs: { dir: Direction; arrow: string; x: number; y: number }[] = [
-      { dir: 'up',    arrow: '\u25B2', x: cx,           y: centerY - sz },
-      { dir: 'down',  arrow: '\u25BC', x: cx,           y: centerY + sz },
-      { dir: 'left',  arrow: '\u25C4', x: cx - sz,      y: centerY },
-      { dir: 'right', arrow: '\u25BA', x: cx + sz,      y: centerY },
+      { dir: 'up',    arrow: '\u25B2', x: dpadCx,           y: centerY - sz },
+      { dir: 'down',  arrow: '\u25BC', x: dpadCx,           y: centerY + sz },
+      { dir: 'left',  arrow: '\u25C4', x: dpadCx - sz,      y: centerY },
+      { dir: 'right', arrow: '\u25BA', x: dpadCx + sz,      y: centerY },
     ];
 
     for (const def of btnDefs) {
@@ -60,34 +63,67 @@ export class DPad {
     }
 
     if (showMunch) {
-      // Munch button in center of d-pad
-      const munchBg = this.scene.add.rectangle(cx, centerY, sz - 16, sz - 16, 0x3a5a2a, 0.8)
-        .setStrokeStyle(2, 0x44cc44)
-        .setInteractive({ useHandCursor: true })
-        .setScrollFactor(0)
-        .setDepth(10);
+      if (style === 'two-handed') {
+        // Large munch button on the right side
+        const munchX = CANVAS_WIDTH - 150;
+        const munchSize = 120;
+        const munchBg = this.scene.add.rectangle(munchX, centerY, munchSize, munchSize, 0x3a5a2a, 0.8)
+          .setStrokeStyle(3, 0x44cc44)
+          .setInteractive({ useHandCursor: true })
+          .setScrollFactor(0)
+          .setDepth(10);
 
-      const munchLabel = this.scene.add.text(cx, centerY, 'MUNCH', {
-        fontSize: '18px',
-        fontFamily: 'Arial',
-        color: '#44cc44',
-        fontStyle: 'bold',
-      }).setOrigin(0.5)
-        .setScrollFactor(0)
-        .setDepth(11);
+        const munchLabel = this.scene.add.text(munchX, centerY, 'MUNCH', {
+          fontSize: '24px',
+          fontFamily: 'Arial',
+          color: '#44cc44',
+          fontStyle: 'bold',
+        }).setOrigin(0.5)
+          .setScrollFactor(0)
+          .setDepth(11);
 
-      munchBg.on('pointerdown', () => {
-        munchBg.setFillStyle(0x44cc44, 0.5);
-        onMunch();
-      });
-      munchBg.on('pointerup', () => {
-        munchBg.setFillStyle(0x3a5a2a, 0.8);
-      });
-      munchBg.on('pointerout', () => {
-        munchBg.setFillStyle(0x3a5a2a, 0.8);
-      });
+        munchBg.on('pointerdown', () => {
+          munchBg.setFillStyle(0x44cc44, 0.5);
+          onMunch();
+        });
+        munchBg.on('pointerup', () => {
+          munchBg.setFillStyle(0x3a5a2a, 0.8);
+        });
+        munchBg.on('pointerout', () => {
+          munchBg.setFillStyle(0x3a5a2a, 0.8);
+        });
 
-      this.munchBtn = { bg: munchBg, label: munchLabel };
+        this.munchBtn = { bg: munchBg, label: munchLabel };
+      } else {
+        // Center mode: munch button in center of d-pad
+        const munchBg = this.scene.add.rectangle(dpadCx, centerY, sz - 16, sz - 16, 0x3a5a2a, 0.8)
+          .setStrokeStyle(2, 0x44cc44)
+          .setInteractive({ useHandCursor: true })
+          .setScrollFactor(0)
+          .setDepth(10);
+
+        const munchLabel = this.scene.add.text(dpadCx, centerY, 'MUNCH', {
+          fontSize: '18px',
+          fontFamily: 'Arial',
+          color: '#44cc44',
+          fontStyle: 'bold',
+        }).setOrigin(0.5)
+          .setScrollFactor(0)
+          .setDepth(11);
+
+        munchBg.on('pointerdown', () => {
+          munchBg.setFillStyle(0x44cc44, 0.5);
+          onMunch();
+        });
+        munchBg.on('pointerup', () => {
+          munchBg.setFillStyle(0x3a5a2a, 0.8);
+        });
+        munchBg.on('pointerout', () => {
+          munchBg.setFillStyle(0x3a5a2a, 0.8);
+        });
+
+        this.munchBtn = { bg: munchBg, label: munchLabel };
+      }
     }
   }
 

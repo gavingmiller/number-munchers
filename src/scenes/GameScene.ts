@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { GameState, Direction, GameMode, GradeLevel, ScoreData, CharacterType, GameDeath, ProblemResult } from '../types';
 import { createLevelState, applyMove, applyMunch, applyTroggleHit, applyTroggleTick } from '../game/state/GameState';
 import type { SessionCarry } from '../game/state/GameState';
-import { addGameRecord } from '../game/state/Persistence';
+import { addGameRecord, getSettings } from '../game/state/Persistence';
 import type { GameRecord } from '../game/state/Persistence';
 import { checkPlayerCell, checkPlayerTroggles } from '../game/logic/CollisionSystem';
 import { getWrongExplanation } from '../game/logic/RuleEngine';
@@ -90,7 +90,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.dpad.create(() => {
       this.handleMunch();
-    });
+    }, true, getSettings().controlStyle);
 
     // Keyboard input
     if (this.input.keyboard) {

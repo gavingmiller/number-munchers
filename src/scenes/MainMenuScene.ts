@@ -98,6 +98,16 @@ export class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
     histBg.on('pointerdown', () => this.scene.start('History'));
 
+    const settingsBg = this.add.rectangle(CANVAS_WIDTH - 20 - navBtnW / 2, 30 + (navBtnH + 8) * 2 + navBtnH / 2, navBtnW, navBtnH, 0x1a1a1a)
+      .setStrokeStyle(1, 0xffd700)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(CANVAS_WIDTH - 20 - navBtnW / 2, 30 + (navBtnH + 8) * 2 + navBtnH / 2, '\u2699 Settings', {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      color: '#aaaaaa',
+    }).setOrigin(0.5);
+    settingsBg.on('pointerdown', () => this.scene.start('Settings'));
+
     // Grade indicator + subtitle
     this.add.text(centerX, 280, `${GRADE_CONFIG[this.grade].label} — Choose a game mode`, {
       fontSize: '24px',

@@ -38,9 +38,16 @@ export interface UnlockState {
   unlockedMusic: string[];
 }
 
+export type ControlStyle = 'center' | 'two-handed';
+
+export interface GameSettings {
+  controlStyle: ControlStyle;
+}
+
 export interface PlayerData {
   history: GameRecord[];
   unlocks: UnlockState;
+  settings: GameSettings;
 }
 
 // ── Constants ──
@@ -79,6 +86,9 @@ function createDefaultPlayerData(): PlayerData {
       unlockedThemes: [],
       unlockedMusic: [],
     },
+    settings: {
+      controlStyle: 'center',
+    },
   };
 }
 
@@ -90,6 +100,10 @@ export function loadPlayerData(): PlayerData {
     // Ensure default character is always unlocked
     if (!parsed.unlocks.unlockedCharacters.includes(DEFAULT_CHARACTER)) {
       parsed.unlocks.unlockedCharacters.unshift(DEFAULT_CHARACTER);
+    }
+    // Migrate: add settings if missing (existing saves)
+    if (!parsed.settings) {
+      parsed.settings = { controlStyle: 'center' };
     }
     return parsed;
   } catch {
@@ -144,4 +158,15 @@ export function unlockCharacter(character: CharacterType): boolean {
   data.unlocks.unlockedCharacters.push(character);
   savePlayerData(data);
   return true;
+}
+
+export function getSettings(): GameSettings {
+  const data = loadPlayerData();
+  return data.settings;
+}
+
+export function saveSettings(settings: GameSettings): void {
+  const data = loadPlayerData();
+  data.settings = settings;
+  savePlayerData(data);
 }
