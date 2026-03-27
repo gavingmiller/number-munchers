@@ -29,6 +29,7 @@ interface GameSceneData {
   character?: CharacterType;
   grade?: GradeLevel;
   carry?: SessionCarry;
+  previousLives?: number;
 }
 
 export class GameScene extends Phaser.Scene {
@@ -58,12 +59,14 @@ export class GameScene extends Phaser.Scene {
       score: data.score,
       character: data.character ?? 'box',
       grade: data.grade ?? ((Number(localStorage.getItem('numberMunchers_grade')) || 4) as GradeLevel),
+      carry: data.carry,
+      previousLives: data.previousLives,
     };
   }
 
   create(): void {
-    const { mode, level, score, grade, carry } = this.sceneData;
-    this.state = createLevelState(mode, level ?? 1, score, grade, carry);
+    const { mode, level, score, grade, carry, previousLives } = this.sceneData;
+    this.state = createLevelState(mode, level ?? 1, score, grade, carry, previousLives);
     this.moveTimer = 0;
     this.gameTickTimer = 0;
     this.paused = false;
@@ -298,6 +301,7 @@ export class GameScene extends Phaser.Scene {
         deaths: this.state.deaths,
         problems: this.state.problems,
       },
+      previousLives: this.state.lives,
     });
   }
 

@@ -41,10 +41,10 @@ export class HistoryScene extends Phaser.Scene {
     }
 
     // Back button
-    const backBg = this.add.rectangle(cx, CANVAS_HEIGHT - 45, 200, 50, 0x1e3a5f)
+    const backBg = this.add.rectangle(cx, CANVAS_HEIGHT - 70, 200, 50, 0x1e3a5f)
       .setStrokeStyle(2, 0xffd700)
       .setInteractive({ useHandCursor: true });
-    this.add.text(cx, CANVAS_HEIGHT - 45, 'Back', {
+    this.add.text(cx, CANVAS_HEIGHT - 70, 'Back', {
       fontSize: '24px',
       fontFamily: 'Arial',
       color: '#ffd700',
@@ -75,7 +75,7 @@ export class HistoryScene extends Phaser.Scene {
 
     // Mode & Grade
     const modeLabel = MODE_LABELS[game.mode] ?? game.mode;
-    this.add.text(90, y + 10, `G${game.grade} ${modeLabel}`, {
+    this.add.text(90, y + 10, `Grade ${game.grade} ${modeLabel}`, {
       fontSize: '16px',
       fontFamily: 'Arial',
       color: '#ffffff',

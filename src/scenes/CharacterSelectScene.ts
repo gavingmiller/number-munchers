@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { GameMode, GradeLevel, CharacterType } from '../types';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, COLOR_CELL } from '../constants';
 import { drawCharacter } from '../ui/CharacterSprites';
-import { isCharacterUnlocked, CHARACTER_PRICES, getAvailableStars } from '../game/state/Persistence';
+import { isCharacterUnlocked } from '../game/state/Persistence';
 
 interface CharSelectData {
   mode: GameMode;
@@ -37,6 +37,7 @@ export class CharacterSelectScene extends Phaser.Scene {
   private spaceKey?: Phaser.Input.Keyboard.Key;
   private moveTimer = 0;
   private readonly MOVE_MS = 200;
+  private available: CharOption[] = [];
 
   constructor() {
     super({ key: 'CharacterSelect' });
@@ -47,6 +48,7 @@ export class CharacterSelectScene extends Phaser.Scene {
     this.selectedGrade = data.grade ?? ((Number(localStorage.getItem('numberMunchers_grade')) || 4) as GradeLevel);
     this.selectedIndex = 0;
     this.cardBgs = [];
+    this.available = CHARACTERS.filter(c => isCharacterUnlocked(c.type));
   }
 
   create(): void {
@@ -61,7 +63,7 @@ export class CharacterSelectScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5);
 
-    // 3x3 grid layout
+    // Dynamic grid layout
     const cardW = 220;
     const cardH = 190;
     const gapX = 20;
@@ -70,12 +72,12 @@ export class CharacterSelectScene extends Phaser.Scene {
     const startX = (CANVAS_WIDTH - totalW) / 2 + cardW / 2;
     const startY = 290;
 
-    for (let idx = 0; idx < CHARACTERS.length; idx++) {
+    for (let idx = 0; idx < this.available.length; idx++) {
       const r = Math.floor(idx / GRID_COLS);
       const c = idx % GRID_COLS;
       const x = startX + c * (cardW + gapX);
       const y = startY + r * (cardH + gapY);
-      const opt = CHARACTERS[idx];
+      const opt = this.available[idx];
       this.createCharacterCard(idx, x, y, cardW, cardH, opt.label, opt.type);
     }
 
@@ -99,14 +101,14 @@ export class CharacterSelectScene extends Phaser.Scene {
       const oldIndex = this.selectedIndex;
       const row = Math.floor(this.selectedIndex / GRID_COLS);
       const col = this.selectedIndex % GRID_COLS;
-      const totalRows = Math.ceil(CHARACTERS.length / GRID_COLS);
+      const totalRows = Math.ceil(this.available.length / GRID_COLS);
 
       switch (dir) {
         case 'left':
           this.selectedIndex = col > 0 ? this.selectedIndex - 1 : this.selectedIndex;
           break;
         case 'right':
-          if (col < GRID_COLS - 1 && this.selectedIndex + 1 < CHARACTERS.length) {
+          if (col < GRID_COLS - 1 && this.selectedIndex + 1 < this.available.length) {
             this.selectedIndex++;
           }
           break;
@@ -116,7 +118,7 @@ export class CharacterSelectScene extends Phaser.Scene {
         case 'down':
           if (row < totalRows - 1) {
             const next = this.selectedIndex + GRID_COLS;
-            if (next < CHARACTERS.length) this.selectedIndex = next;
+            if (next < this.available.length) this.selectedIndex = next;
           }
           break;
       }
@@ -154,8 +156,7 @@ export class CharacterSelectScene extends Phaser.Scene {
   }
 
   private confirmSelection(): void {
-    const character = CHARACTERS[this.selectedIndex].type;
-    if (!isCharacterUnlocked(character)) return; // locked characters can't be selected
+    const character = this.available[this.selectedIndex].type;
     this.scene.start('Game', { mode: this.selectedMode, character, grade: this.selectedGrade });
   }
 
@@ -184,25 +185,6 @@ export class CharacterSelectScene extends Phaser.Scene {
     // Character preview sprite
     const container = this.add.container(cx, cy + 15);
     drawCharacter(this, container, character, 4);
-
-    // Lock overlay for locked characters
-    const unlocked = isCharacterUnlocked(character);
-    if (!unlocked) {
-      // Dim the card
-      this.add.rectangle(cx, cy, w, h, 0x000000, 0.5).setDepth(1);
-      // Lock icon
-      this.add.text(cx, cy - 10, '\uD83D\uDD12', {
-        fontSize: '36px',
-      }).setOrigin(0.5).setDepth(2);
-      // Price
-      const price = CHARACTER_PRICES[character];
-      this.add.text(cx, cy + 30, `\u2B50 ${price}`, {
-        fontSize: '18px',
-        fontFamily: 'Arial',
-        color: '#ffd700',
-        fontStyle: 'bold',
-      }).setOrigin(0.5).setDepth(2);
-    }
 
     bg.on('pointerover', () => {
       this.selectedIndex = index;

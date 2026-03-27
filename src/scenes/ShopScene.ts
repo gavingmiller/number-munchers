@@ -91,10 +91,10 @@ export class ShopScene extends Phaser.Scene {
     });
 
     // Back button
-    const backBg = this.add.rectangle(cx, CANVAS_HEIGHT - 45, 200, 50, 0x1e3a5f)
+    const backBg = this.add.rectangle(cx, CANVAS_HEIGHT - 70, 200, 50, 0x1e3a5f)
       .setStrokeStyle(2, 0xffd700)
       .setInteractive({ useHandCursor: true });
-    this.add.text(cx, CANVAS_HEIGHT - 45, 'Back', {
+    this.add.text(cx, CANVAS_HEIGHT - 70, 'Back', {
       fontSize: '24px',
       fontFamily: 'Arial',
       color: '#ffd700',
@@ -124,17 +124,28 @@ export class ShopScene extends Phaser.Scene {
       .setStrokeStyle(2, unlocked ? 0x00ff88 : 0xffd700)
       .setInteractive({ useHandCursor: !unlocked && canAfford });
 
-    // Name
-    this.add.text(cx, cy - h / 2 + 20, CHAR_LABELS[character], {
+    // Name — hidden for locked characters
+    this.add.text(cx, cy - h / 2 + 20, unlocked ? CHAR_LABELS[character] : '???', {
       fontSize: '18px',
       fontFamily: 'Arial',
       color: '#ffffff',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    // Character sprite
-    const container = this.add.container(cx, cy + 5);
-    drawCharacter(this, container, character, 3);
+    if (unlocked) {
+      // Character sprite — only shown when unlocked
+      const container = this.add.container(cx, cy + 5);
+      drawCharacter(this, container, character, 3);
+    } else {
+      // Silhouette placeholder for locked characters
+      this.add.rectangle(cx, cy + 5, 30, 36, 0x222222).setStrokeStyle(1, 0x444444);
+      this.add.text(cx, cy + 5, '?', {
+        fontSize: '28px',
+        fontFamily: 'Arial',
+        color: '#555555',
+        fontStyle: 'bold',
+      }).setOrigin(0.5);
+    }
 
     if (unlocked) {
       // Checkmark

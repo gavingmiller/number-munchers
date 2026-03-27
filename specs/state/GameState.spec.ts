@@ -113,6 +113,16 @@ describe('createLevelState', () => {
       expect(typeof cell.value).toBe('string');
     }
   });
+
+  it('uses previousLives when provided (lives carry over between levels)', () => {
+    const state = createLevelState('multiples', 2, undefined, undefined, undefined, 2);
+    expect(state.lives).toBe(2);
+  });
+
+  it('defaults to player.lives (3) when previousLives is not provided', () => {
+    const state = createLevelState('multiples', 2);
+    expect(state.lives).toBe(3);
+  });
 });
 
 describe('applyMove', () => {

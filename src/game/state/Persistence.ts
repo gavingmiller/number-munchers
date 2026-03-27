@@ -51,14 +51,14 @@ export const DEFAULT_CHARACTER: CharacterType = 'claude';
 
 export const CHARACTER_PRICES: Record<CharacterType, number> = {
   claude: 0,
-  box: 25,
-  axolotl: 75,
-  marshmallow: 150,
-  robot: 300,
-  electricmouse: 500,
-  mrpickle: 750,
-  nyancat: 1000,
-  pusheen: 1500,
+  box: 100,
+  axolotl: 250,
+  marshmallow: 500,
+  robot: 1000,
+  electricmouse: 2000,
+  mrpickle: 3500,
+  nyancat: 5000,
+  pusheen: 7500,
 };
 
 /** Characters ordered by unlock price for display. */

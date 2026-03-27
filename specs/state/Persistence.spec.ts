@@ -85,8 +85,8 @@ describe('Persistence', () => {
   it('getAvailableStars returns totalStars minus spentStars', () => {
     addGameRecord(makeRecord({ starsEarned: 100 }));
     expect(getAvailableStars()).toBe(100);
-    unlockCharacter('box'); // costs 25
-    expect(getAvailableStars()).toBe(75);
+    unlockCharacter('box'); // costs 100
+    expect(getAvailableStars()).toBe(0);
   });
 
   it('getTotalStars returns lifetime total', () => {
@@ -137,6 +137,6 @@ describe('Character Unlocks', () => {
   it('CHARACTER_PRICES has prices for all 9 characters', () => {
     expect(Object.keys(CHARACTER_PRICES)).toHaveLength(9);
     expect(CHARACTER_PRICES.claude).toBe(0);
-    expect(CHARACTER_PRICES.pusheen).toBe(1500);
+    expect(CHARACTER_PRICES.pusheen).toBe(7500);
   });
 });

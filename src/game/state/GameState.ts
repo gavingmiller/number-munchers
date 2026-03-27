@@ -106,6 +106,7 @@ export function createLevelState(
   previousScore?: ScoreData,
   grade?: GradeLevel,
   carry?: SessionCarry,
+  previousLives?: number,
 ): GameState {
   const effectiveGrade = grade ?? 4;
   const config = getLevelConfig(level, mode, effectiveGrade);
@@ -153,7 +154,7 @@ export function createLevelState(
     level,
     status: 'playing',
     score,
-    lives: player.lives,
+    lives: previousLives ?? player.lives,
     rule,
     grid,
     player,
