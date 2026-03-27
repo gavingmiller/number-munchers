@@ -126,10 +126,11 @@ export class DebugScene extends Phaser.Scene {
 
       this.state = applyTroggleTick(this.state);
 
-      // Random score 1–100 per tick
+      // Random stars 1–100 per tick (tests HUD formatting)
       const pts = Math.floor(Math.random() * 100) + 1;
       this.state = {
         ...this.state,
+        starsEarned: this.state.starsEarned + pts,
         score: { ...this.state.score, current: this.state.score.current + pts },
       };
 

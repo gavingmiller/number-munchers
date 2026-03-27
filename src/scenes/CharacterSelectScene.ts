@@ -17,11 +17,11 @@ interface CharOption {
 const CHARACTERS: CharOption[] = [
   { label: 'Claude', type: 'claude' },
   { label: 'Box', type: 'box' },
-  { label: 'Axolotl', type: 'axolotl' },
+  { label: 'Axie', type: 'axolotl' },
   { label: 'Elec Mouse', type: 'electricmouse' },
   { label: 'Marshmallow', type: 'marshmallow' },
-  { label: 'Robot', type: 'robot' },
-  { label: 'Nyan Cat', type: 'nyancat' },
+  { label: 'Bender', type: 'robot' },
+  { label: 'Poptart', type: 'nyancat' },
   { label: 'Pusheen', type: 'pusheen' },
   { label: 'Mr Pickle', type: 'mrpickle' },
 ];

@@ -14,11 +14,11 @@ import {
 const CHAR_LABELS: Record<CharacterType, string> = {
   claude: 'Claude',
   box: 'Box',
-  axolotl: 'Axolotl',
+  axolotl: 'Axie',
   electricmouse: 'Elec Mouse',
   marshmallow: 'Marshmallow',
-  robot: 'Robot',
-  nyancat: 'Nyan Cat',
+  robot: 'Bender',
+  nyancat: 'Poptart',
   pusheen: 'Pusheen',
   mrpickle: 'Mr Pickle',
 };
