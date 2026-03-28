@@ -1,112 +1,188 @@
 # Architecture
 
-## Design Pattern
-**Functional State Management + Layered Architecture (ECS-inspired)**
+**Analysis Date:** 2026-03-28
 
-Pure functional immutable state model where all game logic is deterministic and side-effect-free. Clean separation across four layers.
+## Pattern Overview
 
-## Design Principles
+**Overall:** Functional State Management + Phaser Scene-based GUI
 
-### Pure Functional State
-- All state changes use immutable reducers: `applyMove()`, `applyMunch()`, `applyTroggleHit()`, `applyTroggleTick()`
-- Each reducer takes current state, returns new state object without mutation
-- State is plain TypeScript objects (no classes)
+Pure functional immutable state model with deterministic game logic completely decoupled from Phaser rendering. Game state lives as plain TypeScript objects; all mutations are explicit reducers that produce new state. Phaser scenes manage lifecycle and input, renderers consume read-only state snapshots.
 
-### Separation of Concerns
-- Game logic decoupled from rendering — renderers depend on logic, never vice versa
-- Types in `src/types.ts` have NO Phaser imports
-- Logic files contain pure functions only; UI files contain Phaser-specific code
+**Key Characteristics:**
+- Pure functional reducers with no side effects (core game logic)
+- Unidirectional data flow: Input → Reducer → New State → Render
+- No global state container; state passed through scene lifecycle
+- All game logic in `src/game/` (no Phaser imports)
+- Phaser scenes only handle input, lifecycle, and delegation to renderers
+- Programmatic pixel art sprites (no image assets)
 
-### Procedural Graphics
-- All sprites drawn programmatically via Phaser Graphics API
-- No image assets — each sprite is a grid of colored pixels defined as `[col, row]` tuples
+## Layers
+
+**Layer 1: Game Logic (Pure Functions)**
+- Location: `src/game/logic/`
+- Contains: Rule generation, grid generation, collision detection, difficulty scaling, AI
+- Depends on: Nothing (only types from `src/types.ts`)
+- Used by: GameState reducers, GameScene
+- Characteristic: 100% testable, no side effects, no Phaser dependency
+
+**Layer 2: Entity Factories & State Management**
+- Location: `src/game/entities/` + `src/game/state/`
+- Contains: Entity constructors, state reducers, persistence layer
+- Depends on: Layer 1 (logic), `src/types.ts`
+- Used by: GameScene
+- Characteristic: Plain function factories and pure reducers; Persistence uses localStorage
+
+**Layer 3: Scene Lifecycle & Input**
+- Location: `src/scenes/`
+- Contains: 13 Phaser scenes handling navigation, input, and game flow
+- Depends on: Layer 2 (state), UI layer, types
+- Used by: Phaser game instance
+- Characteristic: Scene orchestration, input polling, event handling, cross-scene data passing
+
+**Layer 4: Rendering & UI Components**
+- Location: `src/ui/`
+- Contains: Phaser display object wrappers, sprite renderers, HUD components
+- Depends on: `src/types.ts`, game state objects (read-only)
+- Used by: Scenes (called from `create()` and `update()`)
+- Characteristic: Graphics API calls, container management, position/visibility updates
 
 ## Data Flow
 
-```
-User Input (keyboard/d-pad)
-  → GameScene.update() / handleMove() / handleMunch()
-  → Game Logic Reducers (applyMove, applyMunch, applyTroggleTick)
-  → Immutable GameState (new object)
-  → CollisionSystem (checkPlayerCell, checkPlayerTroggles)
-  → Rendering Update (GridRenderer, HUD, DebugOverlay)
-  → Phaser Display Objects
-```
+**Gameplay Loop (100ms tick rate):**
 
-## Layer 1: Game Logic (`src/game/logic/`)
+1. User presses arrow key or taps d-pad → Scene.update()
+2. GameScene.handleMove() calls reducer: `applyMove(state, direction)`
+3. Reducer returns new state object (player position updated, troggles checked for activation)
+4. GameScene calls `gridRenderer.update(state)` to sync visuals
+5. GameScene calls `checkPlayerTroggles(state)` collision check
+6. If collision: trigger life loss, show overlay
+7. Every 100ms tick: `applyTroggleTick()` advances troggle AI, moves troggles
+8. New grid state → Renderer updates display
+9. Collision checks run again; if hit: life lost
 
-Pure functions, testable, no Phaser dependency:
+**State Persistence:**
 
-| File | Responsibility |
-|------|---|
-| `RuleEngine.ts` | Rule generation, correctness evaluation, equation generation |
-| `GridGenerator.ts` | Grid initialization (67-75% correct cells) |
-| `TroggleAI.ts` | 5 unique troggle movement AIs |
-| `CollisionSystem.ts` | Player-cell and player-troggle collision detection |
-| `DifficultyTable.ts` | Level scaling (troggles, speed, points, number range) |
-| `MathUtils.ts` | `isMultipleOf()`, `randomInt()`, `shuffle()` |
-| `PrimeUtils.ts` | `isPrime()`, `getPrimesInRange()` |
-| `FactorUtils.ts` | `getFactors()`, `isFactorOf()` |
+- Game record (final stats) → `addGameRecord()` → localStorage `numberMunchers_player`
+- Player unlocks (stars, characters) → loaded at game start
+- Settings (control style) → cached in Persistence
 
-### Troggle AI Behaviors
-- **Reggie**: Straight-line walker, bounces off walls, exits at edges
-- **Fangs**: Chases player, Manhattan distance, row-first priority
-- **Squirt**: Flees if player distance < 3, otherwise random
-- **Ember**: Pure random movement
-- **Bonehead**: Greedy best-next-cell, 50% faster, enters at tick 1000
+## Key Abstractions
 
-## Layer 2: Entity & State (`src/game/entities/` + `src/game/state/`)
+**GameState (Master State Object)**
+- Location: `src/types.ts` lines 65-82
+- Contains: mode, grade, level, status, score, lives, rule, 30-cell grid, player position, 5 troggles
+- Immutable: all updates return new object via reducer
+- Passed as read-only parameter to rendering and collision functions
+- Example structure:
+  ```typescript
+  interface GameState {
+    mode: GameMode;           // 'multiples', 'factors', 'sums', etc.
+    grade: GradeLevel;        // 1-5
+    level: number;
+    status: GameStatus;       // 'playing' | 'life-lost' | 'level-complete' | 'game-over'
+    score: ScoreData;
+    lives: number;
+    rule: Rule;               // { mode, target?, description }
+    grid: CellData[];         // 30 cells indexed as row*COLS + col
+    player: PlayerData;       // { row, col, lives }
+    troggles: TroggleData[];  // array of 5 active/inactive troggles
+  }
+  ```
 
-| File | Responsibility |
-|------|---|
-| `Player.ts` | Player creation (center at 2,2), movement |
-| `Cell.ts` | Cell creation, blanking |
-| `Troggle.ts` | Troggle creation, tick mechanics |
-| `GameState.ts` | Level state creation, main reducers |
-| `ScoreTracker.ts` | Score management, extra life thresholds |
+**Rule Engine (Problem Generation)**
+- Location: `src/game/logic/RuleEngine.ts`
+- Responsibility: Generate rules per level, evaluate cell correctness
+- Examples:
+  - "Multiples of 6" → rule.target = 6
+  - "Prime Numbers" → rule.mode = 'primes'
+  - "Missing Addends: _ + 3 = 8" → rule.target = 5
+- Used by: GridGenerator, collision checks
 
-### State Reducers (pure functions in `GameState.ts`)
-- `createLevelState(mode, level, previousScore?)` — New level init
-- `applyMove(state, dir)` — Player movement + troggle activation checks
-- `applyMunch(state)` — Score or lose life
-- `applyTroggleHit(state)` — Reset player, re-arm troggles
-- `applyTroggleTick(state)` — AI loop: timers, activation, movement
+**TroggleData (Enemy State)**
+- Location: `src/types.ts` lines 34-44
+- 5 troggles per level, each with:
+  - `type`: reggie | fangs | squirt | ember | bonehead
+  - `row`, `col`: current position (-1 = inactive)
+  - `moveTimer`, `moveInterval`: tick-based movement throttling
+  - `playerMovesUntilEntry`, `ticksUntilEntry`: dual activation thresholds
+- Lifecycle: Inactive → Activated at edge → Moves per AI rules → Exits at edge → Deactivated
+- Player hit → All troggles reset to inactive with re-armed timers
 
-## Layer 3: Scenes (`src/scenes/`)
+**Troggle AI (5 Behaviors)**
+- Location: `src/game/logic/TroggleAI.ts` lines 40-124
+- `nextMove(troggle, player, grid)` → Direction for next tick
+- Behaviors:
+  - **Reggie**: Straight-line walker, reverses at walls, exits/re-enters
+  - **Fangs**: Chases player, Manhattan distance, row-first when tied
+  - **Squirt**: Flees if distance < 3, else random
+  - **Ember**: Pure random walk
+  - **Bonehead**: Greedy closest-cell, 50% faster move interval, late activation
 
-| Scene | Purpose |
-|-------|---------|
-| `BootScene.ts` | Initialization |
-| `MainMenuScene.ts` | Mode selection (4 modes) |
-| `CharacterSelectScene.ts` | 9 playable characters |
-| `GameScene.ts` | Main gameplay loop, input, state updates |
-| `GameOverScene.ts` | Life lost overlay with countdown |
-| `CutsceneScene.ts` | Story interlude every 3 levels |
-| `HiScoreScene.ts` | Final score display |
-| `DebugScene.ts` | Test all 5 troggles |
+## Entry Points
 
-## Layer 4: UI & Rendering (`src/ui/`)
+**Game Bootstrap:**
+- Location: `src/main.ts`
+- Creates Phaser game instance with config: 768×1024 canvas, 4 active pointers (touch), pixel-perfect rendering
+- Scene list (13 total): BootScene → GradeSelectScene → MainMenuScene → CharacterSelectScene → GameScene (+ overlays) → GameOverScene → LevelCompleteScene → CutsceneScene → HiScoreScene → HistoryScene → ShopScene → SettingsScene → DebugScene
 
-| File | Responsibility |
-|------|---|
-| `GridRenderer.ts` | Grid display, cell text, player/troggle sprites |
-| `HUD.ts` | Score, level, lives display |
-| `RuleBanner.ts` | Rule description banner |
-| `DPad.ts` | On-screen directional + munch buttons |
-| `CharacterSprites.ts` | 9 player character pixel art |
-| `TroggleSprites.ts` | 5 troggle type pixel art |
-| `DebugOverlay.ts` | Debug info display |
+**Level Initialization:**
+- Location: `src/game/state/GameState.ts` lines 103-169, function `createLevelState()`
+- Called from: GameScene.init()
+- Parameters: mode, level, optional previousScore, grade, sessionCarry
+- Creates: new grid, player at center (2,2), 5 inactive troggles with staggered entry timers
+- Returns: complete GameState ready for first render
 
-## Key Types (`src/types.ts`)
+**Gameplay Loop:**
+- Location: `src/scenes/GameScene.ts` lines 125-162, method `update()`
+- Runs every frame (~60fps in browser)
+- Throttles player movement to 200ms intervals
+- Ticks game logic every 100ms (separate timer)
+- Checks collisions after every player move and troggle tick
 
-- `GameState` — Master state: mode, level, status, score, lives, rule, grid, player, troggles
-- `CellData` — row, col, value (number|string), state (filled|blank), isCorrect
-- `TroggleData` — id, type, position, timers, direction, entry thresholds
-- `Rule` — mode, optional target, description
-- `LevelConfig` — troggle count/speed, number range, points per correct
-- Grid: 6 rows x 5 cols = 30 cells, indexed as `row * COLS + col`
+## Error Handling
 
-## State Management
-- **Unidirectional data flow**: Input → Reducer → New State → Rendering
-- **No global state container** — state lives in GameScene, passed to UI
-- **Score persists** between levels via scene data parameter
+**Strategy:** Fail gracefully with game continuity
+
+**Patterns:**
+- Rule generation: Falls back to default rule if target can't be determined
+- Persistence: Returns default save if localStorage corrupted or missing
+- Collision detection: Safe boundary checks, inactive troggles skipped
+- Scene transitions: Scene.start() used consistently, no hard failures on scene not found (Phaser handles)
+
+**Death Scenarios:**
+- Wrong cell selected → `GameDeath` event logged, applyTroggleHit() called
+- Troggle collision → `GameDeath` event logged, applyTroggleHit() called
+- Lives exhausted → Game saved, transition to HiScoreScene
+
+## Cross-Cutting Concerns
+
+**Logging:**
+- GameScene accumulates `GameDeath` events in state.deaths
+- All attempts recorded in state.problems (correct/wrong tracking)
+- Final game record saved via `addGameRecord()` to localStorage
+
+**Validation:**
+- RuleEngine.isCorrect() validates cell values against rule
+- GridGenerator ensures 67-75% correct cells per level
+- DifficultyTable.getLevelConfig() scales troggle count/speed per level
+
+**Authentication:**
+- None; single-player local game
+
+**Difficulty Scaling:**
+- Location: `src/game/logic/DifficultyTable.ts` lines 1-27
+- Troggle count: 1 (level 1) → 3 (level 5)
+- Troggle speed: 800ms (level 1) → 300ms (level 5)
+- Points per correct: 100 (level 1) → 500 (level 5)
+- Number range: Grade-dependent (Grade 1: 1-20, Grade 5: 1-200)
+
+**Grade/Mode System:**
+- Location: `src/game/logic/GradeConfig.ts`
+- 5 grades (1-5), each with grade-appropriate modes
+- Grade 1: sums, even_odd
+- Grade 4: multiples, factors, primes, equalities, division, missing_factors
+- Mode examples shown in menu for UX
+
+---
+
+*Architecture analysis: 2026-03-28*
