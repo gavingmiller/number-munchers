@@ -105,6 +105,7 @@ export class MainMenuScene extends Phaser.Scene {
       fontSize: '14px',
       fontFamily: 'Arial',
       color: '#aaaaaa',
+      padding: { top: 4, bottom: 4 },
     }).setOrigin(0.5);
     settingsBg.on('pointerdown', () => this.scene.start('Settings'));
 
@@ -114,6 +115,7 @@ export class MainMenuScene extends Phaser.Scene {
       fontFamily: 'Arial',
       color: '#ffffff',
       align: 'center',
+      padding: { top: 2, bottom: 4 },
     }).setOrigin(0.5);
 
     // Mode buttons
@@ -135,6 +137,7 @@ export class MainMenuScene extends Phaser.Scene {
         fontFamily: 'Arial',
         color: '#ffffff',
         align: 'center',
+        padding: { top: 2, bottom: 4 },
       }).setOrigin(0.5);
 
       this.add.text(centerX, y + 14, getModeExample(opt.mode, this.grade), {
@@ -142,6 +145,7 @@ export class MainMenuScene extends Phaser.Scene {
         fontFamily: 'Arial',
         color: '#777777',
         align: 'center',
+        padding: { top: 2, bottom: 4 },
       }).setOrigin(0.5);
 
       this.btnBgs.push(bg);
