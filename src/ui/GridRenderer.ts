@@ -43,7 +43,7 @@ export class GridRenderer {
           fontFamily: 'Arial',
           color: COLOR_CELL_TEXT,
           align: 'center',
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setResolution(2);
         this.cellTexts[r][c] = txt;
       }
     }

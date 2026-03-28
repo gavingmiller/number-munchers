@@ -21,7 +21,7 @@ export const DPAD_Y = 640;
 export const DPAD_H = 384;
 
 // Grid cell size
-export const CELL_W = CANVAS_WIDTH / 5;   // 153.6 → we'll use 150 + margins
+export const CELL_W = Math.floor(CANVAS_WIDTH / 5);   // 153 (integer for crisp rendering)
 export const CELL_H = GRID_H / 6;         // 80
 
 // D-Pad
