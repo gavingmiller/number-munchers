@@ -65,27 +65,27 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIEW-01 | — | Pending |
-| VIEW-02 | — | Pending |
-| VIEW-03 | — | Pending |
-| VIEW-04 | — | Pending |
-| VIEW-05 | — | Pending |
-| VIEW-06 | — | Pending |
-| SPRT-01 | — | Pending |
-| SPRT-02 | — | Pending |
-| SPRT-03 | — | Pending |
-| SPRT-04 | — | Pending |
-| SPRT-05 | — | Pending |
-| ANIM-01 | — | Pending |
-| ANIM-02 | — | Pending |
-| ANIM-03 | — | Pending |
-| ANIM-04 | — | Pending |
+| SPRT-01 | Phase 6 | Pending |
+| SPRT-02 | Phase 6 | Pending |
+| SPRT-03 | Phase 6 | Pending |
+| SPRT-04 | Phase 6 | Pending |
+| SPRT-05 | Phase 6 | Pending |
+| VIEW-01 | Phase 7 | Pending |
+| VIEW-02 | Phase 7 | Pending |
+| VIEW-03 | Phase 7 | Pending |
+| VIEW-04 | Phase 7 | Pending |
+| VIEW-05 | Phase 7 | Pending |
+| VIEW-06 | Phase 7 | Pending |
+| ANIM-01 | Phase 8 | Pending |
+| ANIM-02 | Phase 8 | Pending |
+| ANIM-03 | Phase 8 | Pending |
+| ANIM-04 | Phase 8 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after initial definition*
+*Last updated: 2026-03-28 after roadmap creation*
