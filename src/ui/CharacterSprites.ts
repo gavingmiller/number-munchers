@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { CharacterType } from '../types';
 import { COLOR_PLAYER } from '../constants';
+import { animKey } from '../sprites/SpriteRegistry';
 
 /**
  * Draw a pixel art house icon into a container at (0,0) local coords.
@@ -64,6 +65,19 @@ export function drawCharacter(
   character: CharacterType,
   pixelSize: number,
 ): void {
+  // PNG branch: character has a loaded spritesheet texture
+  if (scene.textures.exists(character)) {
+    const sprite = scene.add.sprite(0, 0, character);
+    const targetSize = pixelSize * 12;
+    sprite.setDisplaySize(targetSize, targetSize);
+    const idleKey = animKey(character, 'idle');
+    if (scene.anims.exists(idleKey)) {
+      sprite.play(idleKey);
+    }
+    container.add(sprite);
+    return;
+  }
+
   switch (character) {
     case 'claude':
       drawClaude(scene, container, pixelSize);
