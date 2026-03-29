@@ -218,7 +218,10 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
 
     detail.innerHTML = `
       <div style="border:1px solid #2a3a5e;border-radius:4px;padding:8px;background:#12183a;margin-top:4px;">
-        <div style="font-size:12px;color:#aaa;margin-bottom:6px;font-weight:600;">${animName}</div>
+        <div class="controls-row">
+          <span class="ctrl-label">Name</span>
+          <input id="edit-anim-name" class="ctrl-input" type="text" value="${animName}" style="flex:1" />
+        </div>
         <div class="controls-row">
           <span class="ctrl-label">Start</span>
           <input id="edit-anim-start" class="ctrl-input" type="number" value="${anim.frames[0]}" min="0" style="width:55px" />
@@ -236,15 +239,24 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
     const applyBtn = document.getElementById('btn-apply-anim');
     if (applyBtn) {
       applyBtn.addEventListener('click', () => {
+        const newName = (document.getElementById('edit-anim-name') as HTMLInputElement).value.trim() || animName;
         const start = parseInt((document.getElementById('edit-anim-start') as HTMLInputElement).value) || 0;
         const end = parseInt((document.getElementById('edit-anim-end') as HTMLInputElement).value) || 0;
         const fps = parseInt((document.getElementById('edit-anim-fps') as HTMLInputElement).value) || 8;
 
-        // Update the entry in memory
-        entry.animations[animName] = { frames: [start, end], frameRate: fps };
+        // If renamed, delete old key and create new one
+        if (newName !== animName) {
+          delete entry.animations[animName];
+        }
+        entry.animations[newName] = { frames: [start, end], frameRate: fps };
 
         // Re-create and play the animation in the viewer
-        getScene().createNamedRange(animName, start, end, fps);
+        getScene().createNamedRange(newName, start, end, fps);
+
+        // Refresh the animation buttons to reflect the rename
+        if (newName !== animName) {
+          updateMetadata(spriteName, spriteName in manifest ? 'character' : 'troggle');
+        }
       });
     }
   }
