@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { CharacterType, TroggleType } from '../types';
 import type { SpriteManifest } from '../sprites/SpriteRegistry';
 import { ViewerScene } from './ViewerScene';
+import { commitSprite } from './commit';
 
 const CHARACTERS: CharacterType[] = [
   'claude', 'box', 'axolotl', 'electricmouse', 'marshmallow',
@@ -196,6 +197,67 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
     item.addEventListener('click', () => selectSprite(item, name, type));
 
     return item;
+  }
+
+  // Wire commit button
+  const btnCommit = document.getElementById('btn-commit') as HTMLButtonElement | null;
+  if (btnCommit) {
+    btnCommit.addEventListener('click', async () => {
+      const statusEl = document.getElementById('commit-status');
+      const nameInput = document.getElementById('commit-name') as HTMLInputElement | null;
+      const spriteName = nameInput?.value.trim() ?? '';
+
+      if (!spriteName) {
+        if (statusEl) {
+          statusEl.textContent = 'Enter a sprite name first.';
+          statusEl.className = 'error';
+        }
+        return;
+      }
+
+      if (!_currentFile) {
+        if (statusEl) {
+          statusEl.textContent = 'Load a PNG first.';
+          statusEl.className = 'error';
+        }
+        return;
+      }
+
+      btnCommit.disabled = true;
+      if (statusEl) {
+        statusEl.textContent = 'Committing...';
+        statusEl.className = '';
+      }
+
+      try {
+        const result = await commitSprite(
+          spriteName,
+          _currentFile,
+          getFrameWidth(),
+          getFrameHeight(),
+          getScene().getDefinedRanges(),
+        );
+
+        if (result.ok) {
+          if (statusEl) {
+            statusEl.textContent = `Committed ${spriteName} to public/sprites/${spriteName}/`;
+            statusEl.className = 'success';
+          }
+        } else {
+          if (statusEl) {
+            statusEl.textContent = `Error: ${result.error ?? 'Unknown error'}`;
+            statusEl.className = 'error';
+          }
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.textContent = `Error: ${String(err)}`;
+          statusEl.className = 'error';
+        }
+      } finally {
+        btnCommit.disabled = false;
+      }
+    });
   }
 
   // Build Characters section
