@@ -81,12 +81,71 @@ const spriteCommitPlugin: Plugin = {
   },
 };
 
+/**
+ * Dev-only Vite plugin for updating sprite manifest entries without re-uploading PNGs.
+ */
+const spriteManifestUpdatePlugin: Plugin = {
+  name: 'sprite-manifest-update',
+  configureServer(server) {
+    server.middlewares.use(
+      '/api/sprite-manifest-update',
+      (req: Connect.IncomingMessage, res: ServerResponse) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ error: 'Method not allowed' }));
+          return;
+        }
+
+        let body = '';
+        req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+        req.on('end', () => {
+          try {
+            const payload = JSON.parse(body) as {
+              name: string;
+              entry: {
+                sheet: string;
+                frameWidth: number;
+                frameHeight: number;
+                animations: Record<string, { frames: [number, number]; frameRate?: number }>;
+              };
+            };
+
+            const { name, entry } = payload;
+            if (!name || !entry) {
+              res.statusCode = 400;
+              res.end(JSON.stringify({ error: 'name and entry are required' }));
+              return;
+            }
+
+            const spritesJsonPath = resolve(__dirname, 'public', 'sprites', 'sprites.json');
+            let existing: Record<string, unknown> = {};
+            try {
+              existing = JSON.parse(fs.readFileSync(spritesJsonPath, 'utf-8')) as Record<string, unknown>;
+            } catch { /* start fresh */ }
+
+            existing[name] = entry;
+            fs.writeFileSync(spritesJsonPath, JSON.stringify(existing, null, 2));
+
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ ok: true }));
+          } catch (err) {
+            console.error('[sprite-manifest-update] Error:', err);
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: String(err) }));
+          }
+        });
+      },
+    );
+  },
+};
+
 export default defineConfig({
   base: './',
   server: {
     host: true,
   },
-  plugins: [spriteCommitPlugin],
+  plugins: [spriteCommitPlugin, spriteManifestUpdatePlugin],
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

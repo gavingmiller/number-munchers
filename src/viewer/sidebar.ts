@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { CharacterType, TroggleType } from '../types';
-import type { SpriteManifest } from '../sprites/SpriteRegistry';
+import type { SpriteManifest, SpriteManifestEntry } from '../sprites/SpriteRegistry';
+import { getEntry } from '../sprites/SpriteRegistry';
 import { ViewerScene } from './ViewerScene';
 import { commitSprite } from './commit';
 
@@ -158,26 +159,119 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
       `)
       .join('');
 
-    // Animation state buttons
+    // Animation state buttons + editable parameters
     const animList = document.getElementById('animation-list');
     if (animList) {
+      const entry = getEntry(name);
       const animNames = getScene().getAnimationNames();
-      if (animNames.length > 0) {
-        animList.innerHTML = `<div class="meta-row"><span class="meta-label">Animations</span></div>` +
-          animNames.map((animName) => `
-            <button class="anim-btn" data-anim="${animName}">${animName}</button>
-          `).join('');
+      if (animNames.length > 0 && entry) {
+        let html = `<div class="controls-label">Animations</div>`;
+
+        // Sprite-level info
+        html += `<div style="margin-bottom:8px;font-size:11px;color:#666;">
+          Sheet: ${entry.sheet} | ${entry.frameWidth}x${entry.frameHeight}
+        </div>`;
+
+        // Animation buttons
+        html += `<div style="margin-bottom:8px;">` +
+          animNames.map((animName) =>
+            `<button class="anim-btn" data-anim="${animName}">${animName}</button>`
+          ).join('') + `</div>`;
+
+        // Editable detail panel (populated on click)
+        html += `<div id="anim-detail"></div>`;
+
+        // Save button
+        html += `<button id="btn-save-manifest" class="ctrl-btn" style="width:100%;margin-top:8px;background:#2d6a4f;">Save to Manifest</button>`;
+        html += `<div id="manifest-save-status" style="font-size:11px;margin-top:4px;min-height:14px;"></div>`;
+
+        animList.innerHTML = html;
+
+        // Wire animation buttons
         animList.querySelectorAll('.anim-btn').forEach((btn) => {
           btn.addEventListener('click', () => {
             const animName = (btn as HTMLElement).dataset.anim!;
             getScene().playAnimation(animName);
-            // Highlight active
             animList.querySelectorAll('.anim-btn').forEach((b) => b.classList.remove('active'));
             btn.classList.add('active');
+            showAnimDetail(name, animName, entry);
           });
         });
+
+        // Wire save button
+        const saveBtn = document.getElementById('btn-save-manifest');
+        if (saveBtn) {
+          saveBtn.addEventListener('click', () => saveManifestEntry(name, entry));
+        }
       } else {
         animList.innerHTML = '';
+      }
+    }
+  }
+
+  function showAnimDetail(spriteName: string, animName: string, entry: SpriteManifestEntry): void {
+    const detail = document.getElementById('anim-detail');
+    if (!detail) return;
+
+    const anim = entry.animations[animName];
+    if (!anim) return;
+
+    detail.innerHTML = `
+      <div style="border:1px solid #2a3a5e;border-radius:4px;padding:8px;background:#12183a;margin-top:4px;">
+        <div style="font-size:12px;color:#aaa;margin-bottom:6px;font-weight:600;">${animName}</div>
+        <div class="controls-row">
+          <span class="ctrl-label">Start</span>
+          <input id="edit-anim-start" class="ctrl-input" type="number" value="${anim.frames[0]}" min="0" style="width:55px" />
+          <span class="ctrl-label">End</span>
+          <input id="edit-anim-end" class="ctrl-input" type="number" value="${anim.frames[1]}" min="0" style="width:55px" />
+        </div>
+        <div class="controls-row">
+          <span class="ctrl-label">FPS</span>
+          <input id="edit-anim-fps" class="ctrl-input" type="number" value="${anim.frameRate ?? 8}" min="1" max="60" style="width:55px" />
+        </div>
+        <button id="btn-apply-anim" class="ctrl-btn" style="width:100%;margin-top:6px;">Apply & Preview</button>
+      </div>
+    `;
+
+    const applyBtn = document.getElementById('btn-apply-anim');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', () => {
+        const start = parseInt((document.getElementById('edit-anim-start') as HTMLInputElement).value) || 0;
+        const end = parseInt((document.getElementById('edit-anim-end') as HTMLInputElement).value) || 0;
+        const fps = parseInt((document.getElementById('edit-anim-fps') as HTMLInputElement).value) || 8;
+
+        // Update the entry in memory
+        entry.animations[animName] = { frames: [start, end], frameRate: fps };
+
+        // Re-create and play the animation in the viewer
+        getScene().createNamedRange(animName, start, end, fps);
+      });
+    }
+  }
+
+  async function saveManifestEntry(name: string, entry: SpriteManifestEntry): Promise<void> {
+    const statusEl = document.getElementById('manifest-save-status');
+    try {
+      const res = await fetch('/api/sprite-manifest-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, entry }),
+      });
+      const result = await res.json() as { ok: boolean; error?: string };
+      if (statusEl) {
+        if (result.ok) {
+          statusEl.textContent = 'Saved!';
+          statusEl.style.color = '#52b788';
+        } else {
+          statusEl.textContent = result.error ?? 'Save failed';
+          statusEl.style.color = '#e07070';
+        }
+        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent = String(err);
+        statusEl.style.color = '#e07070';
       }
     }
   }
