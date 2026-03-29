@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { GameState, TroggleData, CharacterType } from '../types';
+import type { GameState, TroggleData, CharacterType, Direction } from '../types';
 import { ROWS, COLS, cellIndex } from '../types';
 import {
   GRID_Y, CELL_W, CELL_H,
@@ -7,6 +7,8 @@ import {
 } from '../constants';
 import { drawCharacter } from './CharacterSprites';
 import { drawTroggle } from './TroggleSprites';
+import { AnimationController, troggleAnimName } from './AnimationController';
+import { animKey } from '../sprites/SpriteRegistry';
 
 const TROGGLE_PIXEL_SIZE = 6;
 
@@ -16,7 +18,9 @@ export class GridRenderer {
   private cellBgs: Phaser.GameObjects.Rectangle[][] = [];
   private cellTexts: Phaser.GameObjects.Text[][] = [];
   private playerContainer!: Phaser.GameObjects.Container;
-  private troggleSprites: Map<string, Phaser.GameObjects.Container> = new Map();
+  private playerSprite: Phaser.GameObjects.Sprite | null = null;
+  private playerAnimController: AnimationController | null = null;
+  private troggleData: Map<string, { container: Phaser.GameObjects.Container; sprite: Phaser.GameObjects.Sprite | null }> = new Map();
 
   constructor(scene: Phaser.Scene, character: CharacterType = 'box') {
     this.scene = scene;
@@ -61,7 +65,16 @@ export class GridRenderer {
       drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
       container.setDepth(4);
       container.setVisible(false);
-      this.troggleSprites.set(t.id, container);
+
+      // PNG branch for troggle
+      let troggleSprite: Phaser.GameObjects.Sprite | null = null;
+      if (this.scene.textures.exists(t.type)) {
+        troggleSprite = this.scene.add.sprite(0, 0, t.type);
+        troggleSprite.setDisplaySize(TROGGLE_PIXEL_SIZE * 12, TROGGLE_PIXEL_SIZE * 12);
+        container.add(troggleSprite);
+      }
+
+      this.troggleData.set(t.id, { container, sprite: troggleSprite });
     }
 
     // Initial sync
@@ -84,6 +97,17 @@ export class GridRenderer {
       this.cellX(state.player.col),
       this.cellY(state.player.row),
     );
+
+    // Return to idle when stationary (no active walk/munch)
+    if (this.playerAnimController) {
+      const current = this.playerAnimController.getCurrentAnim();
+      const idleKey = animKey(this.character, 'idle');
+      const munchKey = animKey(this.character, 'munch');
+      // Don't interrupt munch — it returns to idle via callback
+      if (current !== idleKey && current !== munchKey && !current.startsWith(this.character + '-walk')) {
+        this.playIdle();
+      }
+    }
 
     // Update troggles
     this.syncTroggles(state.troggles);
@@ -111,22 +135,83 @@ export class GridRenderer {
     });
   }
 
+  playWalk(dir: Direction): void {
+    if (!this.playerAnimController) return;
+    const dirMap: Record<Direction, string> = {
+      up: 'walkUp', down: 'walkDown', left: 'walkLeft', right: 'walkRight',
+    };
+    const walkKey = animKey(this.character, dirMap[dir]);
+    if (this.scene.anims.exists(walkKey)) {
+      this.playerAnimController.play(walkKey);
+    }
+  }
+
+  playMunch(): void {
+    if (!this.playerAnimController) return;
+    const munchKey = animKey(this.character, 'munch');
+    if (!this.scene.anims.exists(munchKey)) return;
+    this.playerAnimController.playOnce(munchKey, () => {
+      const idleKey = animKey(this.character, 'idle');
+      if (this.scene.anims.exists(idleKey)) {
+        this.playerAnimController?.play(idleKey);
+      }
+    });
+  }
+
+  playIdle(): void {
+    if (!this.playerAnimController) return;
+    const idleKey = animKey(this.character, 'idle');
+    if (this.scene.anims.exists(idleKey)) {
+      this.playerAnimController.play(idleKey);
+    }
+  }
+
   private createPlayerSprite(x: number, y: number): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
-    drawCharacter(this.scene, container, this.character, 4);
+
+    // PNG branch: character has a loaded spritesheet texture
+    if (this.scene.textures.exists(this.character)) {
+      const sprite = this.scene.add.sprite(0, 0, this.character);
+      sprite.setDisplaySize(4 * 12, 4 * 12);
+      container.add(sprite);
+      this.playerSprite = sprite;
+      this.playerAnimController = new AnimationController(sprite);
+      const idleKey = animKey(this.character, 'idle');
+      if (this.scene.anims.exists(idleKey)) {
+        this.playerAnimController.play(idleKey);
+      }
+    } else {
+      // Programmatic fallback
+      drawCharacter(this.scene, container, this.character, 4);
+      this.playerSprite = null;
+      this.playerAnimController = null;
+    }
+
     return container;
   }
 
   private syncTroggles(troggles: TroggleData[]): void {
     for (const t of troggles) {
-      const sprite = this.troggleSprites.get(t.id);
-      if (!sprite) continue;
+      const data = this.troggleData.get(t.id);
+      if (!data) continue;
+
+      const { container, sprite } = data;
 
       if (t.row === -1) {
-        sprite.setVisible(false);
+        container.setVisible(false);
       } else {
-        sprite.setVisible(true);
-        sprite.setPosition(this.cellX(t.col), this.cellY(t.row));
+        container.setVisible(true);
+        container.setPosition(this.cellX(t.col), this.cellY(t.row));
+
+        // Play troggle movement animation if sprite exists
+        if (sprite) {
+          const moveAnim = animKey(t.type, troggleAnimName(t.type));
+          if (this.scene.anims.exists(moveAnim)) {
+            if (sprite.anims.currentAnim?.key !== moveAnim) {
+              sprite.play(moveAnim);
+            }
+          }
+        }
       }
     }
   }
