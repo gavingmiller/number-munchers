@@ -12,6 +12,13 @@ interface SpriteMetadata {
   frameHeight: number;
 }
 
+export interface DefinedRange {
+  name: string;
+  start: number;
+  end: number;
+  fps: number;
+}
+
 export class ViewerScene extends Phaser.Scene {
   private largeContainer: Phaser.GameObjects.Container | null = null;
   private smallContainer: Phaser.GameObjects.Container | null = null;
@@ -19,8 +26,11 @@ export class ViewerScene extends Phaser.Scene {
   private smallLabelText: Phaser.GameObjects.Text | null = null;
   private placeholderText: Phaser.GameObjects.Text | null = null;
   private currentSprite: Phaser.GameObjects.Sprite | null = null;
+  private smallSprite: Phaser.GameObjects.Sprite | null = null;
   private currentName: string | null = null;
   private currentMeta: SpriteMetadata | null = null;
+  private definedRanges: DefinedRange[] = [];
+  private currentAnimKey: string | null = null;
 
   constructor() {
     super({ key: 'Viewer' });
@@ -164,10 +174,85 @@ export class ViewerScene extends Phaser.Scene {
   }
 
   /**
+   * Load a user-provided PNG file as a spritesheet for preview.
+   * Clears the existing preview, creates an object URL, loads the texture,
+   * revokes the URL after load, and renders dual-scale sprites.
+   */
+  loadSpritesheet(file: File, frameWidth: number, frameHeight: number): void {
+    // Remove previous preview texture to avoid Phaser's deduplication no-op
+    if (this.textures.exists('preview')) {
+      this.textures.remove('preview');
+    }
+    // Remove any animations keyed with preview- prefix
+    const animKeys = this.anims.toJSON().anims.map((a: { key: string }) => a.key);
+    for (const key of animKeys) {
+      if (key.startsWith('preview-') || key === 'preview-all') {
+        this.anims.remove(key);
+      }
+    }
+
+    this.definedRanges = [];
+    this.currentAnimKey = null;
+
+    const objectURL = URL.createObjectURL(file);
+    this.load.spritesheet('preview', objectURL, { frameWidth, frameHeight });
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      URL.revokeObjectURL(objectURL);
+      this.onPreviewLoaded('preview', frameWidth, frameHeight, file.name);
+    });
+    this.load.start();
+  }
+
+  /**
    * Return metadata for the currently displayed sprite.
    */
   getMetadata(): SpriteMetadata | null {
     return this.currentMeta;
+  }
+
+  /**
+   * Return the defined animation ranges (for commit).
+   */
+  getDefinedRanges(): DefinedRange[] {
+    return this.definedRanges;
+  }
+
+  private onPreviewLoaded(key: string, frameWidth: number, frameHeight: number, fileName: string): void {
+    this._clearPreviews();
+
+    const texture = this.textures.get(key);
+    const frameCount = Math.max(0, texture.frameTotal - 1); // subtract __BASE
+
+    // Large preview (4x scale) at center
+    const largeSprite = this.add.sprite(300, 250, key);
+    largeSprite.setScale(4);
+    this.currentSprite = largeSprite;
+
+    // Small game-scale preview
+    const smallSprite = this.add.sprite(520, 520, key);
+    smallSprite.setScale(1);
+    this.smallSprite = smallSprite;
+
+    // Labels
+    this.largeLabelText = this.add.text(300, 150, 'Preview (4x)', {
+      fontSize: '14px',
+      color: '#ffffff',
+      align: 'center',
+    }).setOrigin(0.5, 0.5);
+
+    this.smallLabelText = this.add.text(520, 480, 'Game Scale', {
+      fontSize: '12px',
+      color: '#ffffff',
+      align: 'center',
+    }).setOrigin(0.5, 0.5);
+
+    this.currentName = fileName;
+    this.currentMeta = {
+      name: fileName,
+      frameCount,
+      frameWidth,
+      frameHeight,
+    };
   }
 
   private _clearPreviews(): void {
@@ -190,6 +275,10 @@ export class ViewerScene extends Phaser.Scene {
     if (this.currentSprite) {
       this.currentSprite.destroy();
       this.currentSprite = null;
+    }
+    if (this.smallSprite) {
+      this.smallSprite.destroy();
+      this.smallSprite = null;
     }
 
     // Destroy labels

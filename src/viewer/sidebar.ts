@@ -12,9 +12,47 @@ const TROGGLES: TroggleType[] = [
   'reggie', 'fangs', 'squirt', 'ember', 'bonehead',
 ];
 
+/** Module-level state: the last File loaded by drop or picker. Accessed by wireCommitButton. */
+let _currentFile: File | null = null;
+
+/** Returns the last PNG file loaded via drop or file picker. */
+export function getCurrentFile(): File | null {
+  return _currentFile;
+}
+
+/**
+ * Set up drag-and-drop on the canvas container div.
+ * Validates the dropped file is PNG before calling onFile.
+ */
+export function setupDropZone(canvasContainer: HTMLElement, onFile: (file: File) => void): void {
+  canvasContainer.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
+    canvasContainer.classList.add('dragover');
+  });
+
+  canvasContainer.addEventListener('dragleave', () => {
+    canvasContainer.classList.remove('dragover');
+  });
+
+  canvasContainer.addEventListener('drop', (e) => {
+    e.preventDefault();
+    canvasContainer.classList.remove('dragover');
+    const file = e.dataTransfer?.files[0];
+    if (file && file.type === 'image/png') {
+      onFile(file);
+    } else if (file) {
+      console.warn('[Sidebar] Dropped file is not a PNG:', file.type);
+    }
+  });
+}
+
 /**
  * Initialize the sidebar DOM with the sprite roster and metadata panel.
  * Wires click handlers to ViewerScene via game.scene.getScene bridge.
+ * Also wires drag-and-drop and file picker for PNG loading.
  */
 export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
   const spriteList = document.getElementById('sprite-list');
@@ -27,6 +65,69 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
 
   function getScene(): ViewerScene {
     return game.scene.getScene('Viewer') as ViewerScene;
+  }
+
+  function getFrameWidth(): number {
+    const el = document.getElementById('frame-width') as HTMLInputElement | null;
+    return el ? (parseInt(el.value, 10) || 64) : 64;
+  }
+
+  function getFrameHeight(): number {
+    const el = document.getElementById('frame-height') as HTMLInputElement | null;
+    return el ? (parseInt(el.value, 10) || 64) : 64;
+  }
+
+  function onFileLoaded(file: File): void {
+    _currentFile = file;
+    getScene().loadSpritesheet(file, getFrameWidth(), getFrameHeight());
+    // Update metadata panel after load completes (slight delay for scene)
+    setTimeout(() => {
+      const metadataContent = document.getElementById('metadata-content');
+      if (!metadataContent) return;
+      const meta = getScene().getMetadata();
+      if (meta) {
+        metadataContent.innerHTML = [
+          ['Name', meta.name],
+          ['Type', 'external PNG'],
+          ['Frame Count', String(meta.frameCount)],
+          ['Frame Size', `${meta.frameWidth}x${meta.frameHeight}`],
+        ].map(([label, value]) => `
+          <div class="meta-row">
+            <span class="meta-label">${label}</span>
+            <span class="meta-value">${value}</span>
+          </div>
+        `).join('');
+      }
+    }, 300);
+  }
+
+  // Set up drag-and-drop on canvas container
+  const canvasContainer = document.getElementById('canvas-container');
+  if (canvasContainer) {
+    setupDropZone(canvasContainer, onFileLoaded);
+  }
+
+  // Wire file picker button
+  const btnFilePick = document.getElementById('btn-file-pick');
+  if (btnFilePick) {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.png,image/png';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    btnFilePick.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) {
+        onFileLoaded(file);
+        // Reset input so the same file can be re-picked
+        fileInput.value = '';
+      }
+    });
   }
 
   function updateMetadata(name: string, type: 'character' | 'troggle'): void {
