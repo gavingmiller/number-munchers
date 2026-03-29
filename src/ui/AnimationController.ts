@@ -13,6 +13,7 @@ import type { TroggleType } from '../types';
 export interface AnimatableSprite {
   play(key: string): void;
   once(event: string, cb: () => void): void;
+  flipX: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -29,11 +30,13 @@ export class AnimationController {
 
   /**
    * Switch to a new animation. No-op if the same key is already playing.
+   * Optional flipX mirrors the sprite horizontally (e.g., walkLeft = walkRight flipped).
    */
-  play(key: string): void {
+  play(key: string, flipX?: boolean): void {
     if (this.sprite === null) return;
-    if (key === this.currentAnim) return;
+    if (key === this.currentAnim && (flipX === undefined || this.sprite.flipX === flipX)) return;
     this.currentAnim = key;
+    if (flipX !== undefined) this.sprite.flipX = flipX;
     this.sprite.play(key);
   }
 

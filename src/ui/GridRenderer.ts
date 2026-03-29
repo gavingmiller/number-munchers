@@ -8,7 +8,7 @@ import {
 import { drawCharacter } from './CharacterSprites';
 import { drawTroggle } from './TroggleSprites';
 import { AnimationController, troggleAnimName } from './AnimationController';
-import { animKey } from '../sprites/SpriteRegistry';
+import { animKey, getAnimDef } from '../sprites/SpriteRegistry';
 
 const TROGGLE_PIXEL_SIZE = 6;
 
@@ -139,9 +139,11 @@ export class GridRenderer {
     const dirMap: Record<Direction, string> = {
       up: 'walkUp', down: 'walkDown', left: 'walkLeft', right: 'walkRight',
     };
-    const walkKey = animKey(this.character, dirMap[dir]);
+    const animName = dirMap[dir];
+    const walkKey = animKey(this.character, animName);
     if (this.scene.anims.exists(walkKey)) {
-      this.playerAnimController.play(walkKey);
+      const animDef = getAnimDef(this.character, animName);
+      this.playerAnimController.play(walkKey, animDef?.flipX ?? false);
     }
   }
 
@@ -161,7 +163,7 @@ export class GridRenderer {
     if (!this.playerAnimController) return;
     const idleKey = animKey(this.character, 'idle');
     if (this.scene.anims.exists(idleKey)) {
-      this.playerAnimController.play(idleKey);
+      this.playerAnimController.play(idleKey, false);
     }
   }
 

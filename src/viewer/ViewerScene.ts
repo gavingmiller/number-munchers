@@ -283,8 +283,16 @@ export class ViewerScene extends Phaser.Scene {
     const key = `${this.currentName}-${animName}`;
     if (!this.anims.exists(key)) return;
     this.currentAnimKey = key;
+
+    // Apply flipX from manifest
+    const entry = getEntry(this.currentName);
+    const animDef = entry?.animations[animName];
+    const flip = animDef?.flipX ?? false;
+
+    this.currentSprite.flipX = flip;
     this.currentSprite.play({ key, repeat: -1 }, true);
     if (this.smallSprite) {
+      this.smallSprite.flipX = flip;
       this.smallSprite.play({ key, repeat: -1 }, true);
     }
   }

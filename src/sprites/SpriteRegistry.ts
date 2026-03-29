@@ -14,6 +14,8 @@ export interface AnimationDef {
   frameRate?: number;
   /** Defaults to -1 (loop) when omitted */
   repeat?: number;
+  /** Mirror the sprite horizontally (e.g., walkLeft = walkRight flipped) */
+  flipX?: boolean;
 }
 
 export interface SpriteManifestEntry {
@@ -66,6 +68,11 @@ export function getEntry(character: string): SpriteManifestEntry | undefined {
 /** Returns the namespaced animation key, e.g. animKey('claude', 'idle') => 'claude-idle'. */
 export function animKey(character: string, animName: string): string {
   return `${character}-${animName}`;
+}
+
+/** Returns the AnimationDef for a character's animation, or undefined. */
+export function getAnimDef(character: string, animName: string): AnimationDef | undefined {
+  return _manifest[character]?.animations[animName];
 }
 
 /**

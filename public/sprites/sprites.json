@@ -5,38 +5,24 @@
     "frameHeight": 32,
     "animations": {
       "idle": {
-        "frames": [
-          0,
-          3
-        ],
+        "frames": [0, 3],
         "frameRate": 8
       },
       "walkRight": {
-        "frames": [
-          28,
-          33
-        ],
-        "frameRate": 8
-      },
-      "walkUp": {
-        "frames": [
-          56,
-          62
-        ],
+        "frames": [28, 33],
         "frameRate": 8
       },
       "walkLeft": {
-        "frames": [
-          21,
-          26
-        ],
-        "frameRate": 8
+        "frames": [28, 33],
+        "frameRate": 8,
+        "flipX": true
       },
       "walkDown": {
-        "frames": [
-          14,
-          19
-        ],
+        "frames": [21, 26],
+        "frameRate": 8
+      },
+      "walkUp": {
+        "frames": [56, 62],
         "frameRate": 8
       }
     }
