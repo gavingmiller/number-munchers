@@ -18,11 +18,11 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 
 ### Sprite System
 
-- [ ] **SPRT-01**: Sprite manifest maps character names to sprite sheets and animations
+- [x] **SPRT-01**: Sprite manifest maps character names to sprite sheets and animations
 - [ ] **SPRT-02**: Game loads PNG sprite sheets from manifest at runtime
 - [ ] **SPRT-03**: Characters with PNG sprites render from sheets instead of programmatic
 - [ ] **SPRT-04**: Characters without PNG sprites fall back to programmatic drawing
-- [ ] **SPRT-05**: Sprite manifest defines animation sequences per character
+- [x] **SPRT-05**: Sprite manifest defines animation sequences per character
 
 ### Animation
 
@@ -65,11 +65,11 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SPRT-01 | Phase 6 | Pending |
+| SPRT-01 | Phase 6 | Complete |
 | SPRT-02 | Phase 6 | Pending |
 | SPRT-03 | Phase 6 | Pending |
 | SPRT-04 | Phase 6 | Pending |
-| SPRT-05 | Phase 6 | Pending |
+| SPRT-05 | Phase 6 | Complete |
 | VIEW-01 | Phase 7 | Pending |
 | VIEW-02 | Phase 7 | Pending |
 | VIEW-03 | Phase 7 | Pending |

@@ -39,7 +39,7 @@ Phases 1-5 completed informally before GSD adoption. See MILESTONES.md for detai
   2. A character with a PNG sprite sheet renders from the sheet in-game instead of programmatic drawing
   3. A character without a PNG sprite sheet still renders correctly using the existing programmatic method
   4. Adding a new PNG sprite to the game requires only adding the image file and a manifest entry (no code changes)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — SpriteRegistry module with manifest types, helpers, and tests
@@ -81,6 +81,6 @@ Phases execute in numeric order: 6 -> 6.1 -> 6.2 -> 7 -> 7.1 -> 8
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 6. Sprite System Foundation | v2.0 | 0/2 | Not started | - |
+| 6. Sprite System Foundation | 1/2 | In Progress|  | - |
 | 7. Sprite Viewer Dev Tool | v2.0 | 0/? | Not started | - |
 | 8. In-Game Animations | v2.0 | 0/? | Not started | - |
