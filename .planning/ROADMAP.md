@@ -55,7 +55,7 @@ Plans:
   3. Developer can load a PNG sprite sheet from disk and see its frames displayed
   4. Developer can play, pause, and step through animation frames with adjustable speed
   5. Viewer displays metadata for each sprite (name, frame count, dimensions)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 07-01-PLAN.md — Vite multi-page config, viewer HTML shell, ViewerScene, sidebar with sprite roster and metadata
@@ -83,5 +83,5 @@ Phases execute in numeric order: 6 -> 6.1 -> 6.2 -> 7 -> 7.1 -> 8
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 6. Sprite System Foundation | 2/2 | Complete   | 2026-03-29 | - |
-| 7. Sprite Viewer Dev Tool | v2.0 | 0/2 | Planning complete | - |
+| 7. Sprite Viewer Dev Tool | 1/2 | In Progress|  | - |
 | 8. In-Game Animations | v2.0 | 0/? | Not started | - |

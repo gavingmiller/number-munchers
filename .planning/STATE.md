@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Sprite Viewer/Editor
 status: planning
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-29T13:41:41.871Z"
+stopped_at: Completed 07-01-PLAN.md
+last_updated: "2026-03-29T14:08:44.677Z"
 last_activity: 2026-03-28 — Roadmap created for v2.0 milestone
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 06-sprite-system-foundation P01 | 3 | 3 tasks | 4 files |
 | Phase 06-sprite-system-foundation P02 | 3 | 2 tasks | 3 files |
+| Phase 07-sprite-viewer-dev-tool P01 | 4 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 06-sprite-system-foundation]: PNG branch checks scene.textures.exists(character) before programmatic draw — enables zero-code sprite migration
 - [Phase 06-sprite-system-foundation]: BootScene is sprite pipeline entry point: manifest load -> spritesheet queue -> animation register, all in preload/create
 - [Phase 06-sprite-system-foundation]: Manifest load failure is non-fatal: filecomplete event skipped, all characters use programmatic rendering
+- [Phase 07-sprite-viewer-dev-tool]: drawTroggle correct signature is drawTroggle(scene, container, type, P) — plan had wrong arg order; used correct signature
+- [Phase 07-sprite-viewer-dev-tool]: Sidebar initialized in game.events.once('ready') to ensure ViewerScene exists before initSidebar calls getScene()
+- [Phase 07-sprite-viewer-dev-tool]: Vite MPA: rollupOptions.input with named entries main+viewer; viewer.html is dev-only and should not ship in iOS Capacitor build
 
 ### Pending Todos
 
@@ -76,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T13:41:41.838Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-sprite-viewer-dev-tool/07-CONTEXT.md
+Last session: 2026-03-29T14:08:44.644Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: None
