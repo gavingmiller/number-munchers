@@ -24,6 +24,20 @@
           62
         ],
         "frameRate": 8
+      },
+      "walkLeft": {
+        "frames": [
+          21,
+          26
+        ],
+        "frameRate": 8
+      },
+      "walkDown": {
+        "frames": [
+          14,
+          19
+        ],
+        "frameRate": 8
       }
     }
   }

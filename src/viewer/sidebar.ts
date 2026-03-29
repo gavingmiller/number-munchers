@@ -150,6 +150,13 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
       rows.push(['Frame Size', `${meta.frameWidth}x${meta.frameHeight}`]);
     }
 
+    // Count animations from manifest
+    const entry = getEntry(name);
+    const animCount = entry ? Object.keys(entry.animations).length : 0;
+    if (animCount > 0) {
+      rows.push(['Animations', String(animCount)]);
+    }
+
     metadataContent.innerHTML = rows
       .map(([label, value]) => `
         <div class="meta-row">
