@@ -81,9 +81,66 @@ export class ViewerScene extends Phaser.Scene {
   showCharacter(name: string, type: 'character' | 'troggle'): void {
     this._clearPreviews();
 
-    // Large preview container at center
+    const entry = getEntry(name);
+
+    // If this sprite has a loaded texture, use sprite-based rendering with animation support
+    if (this.textures.exists(name) && entry) {
+      const frameCount = Math.max(0, this.textures.get(name).frameTotal - 1);
+
+      // Large preview (4x scale)
+      const largeSprite = this.add.sprite(300, 250, name);
+      largeSprite.setScale(4);
+      this.currentSprite = largeSprite;
+
+      // Small game-scale preview
+      const smallSprite = this.add.sprite(520, 520, name);
+      smallSprite.setScale(1);
+      this.smallSprite = smallSprite;
+
+      // Create animations from manifest for this character's texture key
+      for (const [animName, animDef] of Object.entries(entry.animations)) {
+        const key = `${name}-${animName}`;
+        if (!this.anims.exists(key)) {
+          this.anims.create({
+            key,
+            frames: this.anims.generateFrameNumbers(name, { start: animDef.frames[0], end: animDef.frames[1] }),
+            frameRate: 8,
+            repeat: -1,
+          });
+        }
+      }
+
+      // Set the first animation as current
+      const firstAnimName = Object.keys(entry.animations)[0];
+      if (firstAnimName) {
+        this.currentAnimKey = `${name}-${firstAnimName}`;
+      }
+
+      // Labels
+      this.largeLabelText = this.add.text(300, 150, 'Preview (4x)', {
+        fontSize: '14px',
+        color: '#ffffff',
+        align: 'center',
+      }).setOrigin(0.5, 0.5);
+
+      this.smallLabelText = this.add.text(520, 480, 'Game Scale', {
+        fontSize: '12px',
+        color: '#ffffff',
+        align: 'center',
+      }).setOrigin(0.5, 0.5);
+
+      this.currentName = name;
+      this.currentMeta = {
+        name,
+        frameCount,
+        frameWidth: entry.frameWidth,
+        frameHeight: entry.frameHeight,
+      };
+      return;
+    }
+
+    // Fallback: programmatic rendering (no animation support)
     this.largeContainer = this.add.container(300, 250);
-    // Small game-scale container at bottom-right corner
     this.smallContainer = this.add.container(520, 520);
 
     if (type === 'character') {
@@ -94,7 +151,6 @@ export class ViewerScene extends Phaser.Scene {
       drawTroggle(this, this.smallContainer, name as TroggleType, 3);
     }
 
-    // Labels
     this.largeLabelText = this.add.text(300, 150, 'Preview (4x)', {
       fontSize: '14px',
       color: '#ffffff',
@@ -107,23 +163,12 @@ export class ViewerScene extends Phaser.Scene {
       align: 'center',
     }).setOrigin(0.5, 0.5);
 
-    // Build metadata
-    const entry = getEntry(name);
-    const frameCount = entry
-      ? (this.textures.exists(name)
-        ? this.textures.get(name).frameTotal - 1  // Phaser adds a __BASE frame
-        : Object.values(entry.animations).reduce((max, anim) => {
-            const end = anim.frames[1];
-            return end > max ? end : max;
-          }, 0) + 1)
-      : 0;
-
     this.currentName = name;
     this.currentMeta = {
       name,
-      frameCount,
-      frameWidth: entry?.frameWidth ?? 0,
-      frameHeight: entry?.frameHeight ?? 0,
+      frameCount: 0,
+      frameWidth: 0,
+      frameHeight: 0,
     };
   }
 
