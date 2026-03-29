@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A math education game for kids (grades 1-5) built with Phaser 3, TypeScript, and Vite. Players navigate a grid, "munching" correct answers while avoiding troggle enemies. Deployed as an iOS app via Xcode/Capacitor. Features 10 game modes, star-based progression, character unlocks, game history, and configurable controls.
+A math education game for kids (grades 1-5) built with Phaser 3, TypeScript, and Vite. Players navigate a grid, "munching" correct answers while avoiding troggle enemies. Deployed as an iOS app via Xcode/Capacitor. Features 10 game modes, star-based progression, character unlocks, game history, configurable controls, and a PNG sprite system with dev viewer tool.
 
 ## Core Value
 
@@ -14,68 +14,68 @@ Kids practice math facts through engaging gameplay with meaningful progression �
 
 <!-- Shipped and confirmed valuable. -->
 
-- ✓ Grid-based gameplay with 10 math modes across grades 1-5
-- ✓ 5 troggle enemy types with distinct AI behaviors
-- ✓ 9 playable characters with pixel art sprites
-- ✓ Star-based progression system (1 star per correct answer)
-- ✓ Character unlock shop with tiered pricing
-- ✓ Game history tracking (last 10 games, problems, deaths)
-- ✓ Parent-facing history screen
-- ✓ Settings with center/two-handed control styles
-- ✓ Grade-appropriate difficulty scaling
-- ✓ iOS app deployment with app icon and splash screens
+- ✓ Grid-based gameplay with 10 math modes across grades 1-5 — v1.0
+- ✓ 5 troggle enemy types with distinct AI behaviors — v1.0
+- ✓ 9 playable characters with pixel art sprites — v1.0
+- ✓ Star-based progression system (1 star per correct answer) — v1.0
+- ✓ Character unlock shop with tiered pricing — v1.0
+- ✓ Game history tracking (last 10 games, problems, deaths) — v1.0
+- ✓ Parent-facing history screen — v1.0
+- ✓ Settings with center/two-handed control styles — v1.0
+- ✓ Grade-appropriate difficulty scaling — v1.0
+- ✓ iOS app deployment with app icon and splash screens — v1.0
+- ✓ Sprite manifest system (sprites.json) for PNG sprite sheets — v2.0
+- ✓ PNG sprite rendering with programmatic fallback — v2.0
+- ✓ Sprite viewer dev tool with drag-drop and animation controls — v2.0
+- ✓ "Commit to Project" sprite integration workflow — v2.0
+- ✓ In-game animation hooks (idle, walk, munch) — v2.0
+- ✓ Unique troggle animation names per type — v2.0
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Sprite viewer/editor dev tool for designing and previewing sprites
-- [ ] Migration from programmatic pixel art to PNG sprite sheets
-- [ ] Frame-based sprite animations (walk, idle, munch, death)
-- [ ] Easy sprite swapping mechanism between viewer and game
+(None — planning next milestone)
 
 ### Out of Scope
 
 - Sounds and music — deferred to future milestone
-- New character designs (waffle, alligator, etc.) — deferred, pending sprite system
-- Accessories system — deferred, depends on new sprite architecture
+- New character designs (waffle, alligator, etc.) — deferred, pending sprite art creation
+- Accessories system (sunglasses, mustache, hair) — deferred
 - Chicken helper NPC — deferred
 - Landscape/horizontal layout — known issue, future work
+- Original Number Munchers throwback character — deferred
+- Super Meat Boy character — deferred
 
 ## Context
 
-- All sprites are currently programmatic (Graphics + fillPixels helper in CharacterSprites.ts)
-- 9 characters, 5 troggle types, each drawn with code
-- No image assets exist yet — migration to PNG is a new direction
+- Sprite system supports both programmatic and PNG-based rendering
+- PNG pipeline is "dormant" until sprite sheets are added to manifest
+- Sprite viewer at `/viewer.html` for previewing and committing sprites
+- 265 tests across 18 spec files, all passing
 - Game runs on iPad primarily, dev work on desktop
-- Phaser supports sprite sheets natively (TextureAtlas, SpriteSheet)
+- 9 characters + 5 troggles, all currently using programmatic sprites
 
 ## Constraints
 
-- **Platform**: Must work on iPad (iOS/Safari) — no Node.js file system access in game
-- **Dev tool**: Can use Node/Bun features (separate page, not part of game bundle)
-- **Sprite format**: PNG sprite sheets with frame-based animation
-- **Backwards compat**: Keep programmatic sprites working during migration (don't break existing characters)
-
-## Current Milestone: v2.0 Sprite Viewer/Editor
-
-**Goal:** Build a dev tool for viewing, managing, and animating PNG sprite sheets, and refactor the game's sprite system to support image-based characters alongside programmatic ones.
-
-**Target features:**
-- Standalone sprite viewer page (separate Vite entry point)
-- Load and preview sprite sheets from local directories
-- Animation preview with frame controls
-- Sprite manifest system for game integration
-- Refactored CharacterSprites to support both PNG and programmatic sprites
+- **Platform**: Must work on iPad (iOS/Safari)
+- **Dev tool**: Viewer uses Vite dev server features (not in production build)
+- **Sprite format**: 64x64 fixed grid PNG sprite sheets
+- **Backwards compat**: Programmatic sprites always available as fallback
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Phaser 3 for game engine | Full-featured 2D game framework with good mobile support | ✓ Good |
-| Programmatic pixel art | No asset pipeline needed, easy to iterate | ⚠️ Revisit — migrating to PNG sprites |
+| Programmatic pixel art | No asset pipeline needed, easy to iterate | ✓ Good (kept as fallback) |
 | localStorage for persistence | Simple, no server needed for single-device game | ✓ Good |
 | Stars as currency | More motivating for kids than abstract points | ✓ Good |
+| 64x64 sprite sheets | Good balance of detail and pixel art scale | ✓ Good |
+| Single sprites.json manifest | Simple, one place to manage all sprite mappings | ✓ Good |
+| AnimatableSprite interface | Keeps AnimationController testable without Phaser | ✓ Good |
+| Separate Vite entry for viewer | Dev-only tool, not shipped in iOS bundle | ✓ Good |
+| Vite configureServer for Commit | No external server needed for sprite file writes | ✓ Good |
 
 ---
-*Last updated: 2026-03-28 after milestone v2.0 initialization*
+*Last updated: 2026-03-29 after v2.0 milestone completion*

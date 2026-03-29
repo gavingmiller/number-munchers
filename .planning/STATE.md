@@ -4,7 +4,7 @@ milestone: v2.0
 milestone_name: Sprite Viewer/Editor
 status: planning
 stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-29T15:46:44.081Z"
+last_updated: "2026-03-29T15:53:42.890Z"
 last_activity: 2026-03-28 — Roadmap created for v2.0 milestone
 progress:
   total_phases: 3
