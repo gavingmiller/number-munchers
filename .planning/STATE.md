@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v2.0
+milestone_name: Sprite Viewer/Editor
+status: planning
+stopped_at: Phase 6 context gathered
+last_updated: "2026-03-29T00:38:04.085Z"
+last_activity: 2026-03-28 — Roadmap created for v2.0 milestone
+progress:
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+---
+
 # State: Number Munchers
 
 ## Project Reference
@@ -52,6 +68,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28
-Stopped at: Roadmap created, ready to plan Phase 6
-Resume file: None
+Last session: 2026-03-29T00:38:04.052Z
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-sprite-system-foundation/06-CONTEXT.md
