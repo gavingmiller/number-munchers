@@ -264,6 +264,12 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
   async function saveManifestEntry(name: string, entry: SpriteManifestEntry): Promise<void> {
     const statusEl = document.getElementById('manifest-save-status');
     try {
+      // Merge any defined ranges from the viewer into the entry
+      const definedRanges = getScene().getDefinedRanges();
+      for (const range of definedRanges) {
+        entry.animations[range.name] = { frames: [range.start, range.end], frameRate: range.fps };
+      }
+
       const res = await fetch('/api/sprite-manifest-update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

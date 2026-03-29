@@ -31,6 +31,7 @@ export class ViewerScene extends Phaser.Scene {
   private currentMeta: SpriteMetadata | null = null;
   private definedRanges: DefinedRange[] = [];
   private currentAnimKey: string | null = null;
+  private currentTextureKey: string | null = null;
 
   constructor() {
     super({ key: 'Viewer' });
@@ -91,6 +92,7 @@ export class ViewerScene extends Phaser.Scene {
       const largeSprite = this.add.sprite(300, 250, name);
       largeSprite.setScale(4);
       this.currentSprite = largeSprite;
+      this.currentTextureKey = name;
 
       // Small game-scale preview
       const smallSprite = this.add.sprite(520, 520, name);
@@ -191,6 +193,7 @@ export class ViewerScene extends Phaser.Scene {
     const largeSprite = this.add.sprite(300, 250, key);
     largeSprite.setScale(4);
     this.currentSprite = largeSprite;
+    this.currentTextureKey = key;
 
     // Small game-scale preview
     const smallSprite = this.add.sprite(520, 520, key);
@@ -357,13 +360,14 @@ export class ViewerScene extends Phaser.Scene {
    * Plays the new animation immediately on both sprites.
    */
   createNamedRange(name: string, start: number, end: number, fps: number): void {
-    const animKey = `preview-${name}`;
+    const textureKey = this.currentTextureKey ?? 'preview';
+    const animKey = `${textureKey}-${name}`;
     if (this.anims.exists(animKey)) {
       this.anims.remove(animKey);
     }
     this.anims.create({
       key: animKey,
-      frames: this.anims.generateFrameNumbers('preview', { start, end }),
+      frames: this.anims.generateFrameNumbers(textureKey, { start, end }),
       frameRate: fps,
       repeat: -1,
     });
@@ -398,15 +402,16 @@ export class ViewerScene extends Phaser.Scene {
     }
   }
 
-  /** Ensure a default 'preview-all' animation exists; returns its key or null. */
+  /** Ensure a default 'all' animation exists for the current texture; returns its key or null. */
   private _ensureDefaultAnim(): string | null {
-    if (!this.textures.exists('preview')) return null;
-    const frameCount = Math.max(0, this.textures.get('preview').frameTotal - 1);
-    const key = 'preview-all';
+    const textureKey = this.currentTextureKey ?? 'preview';
+    if (!this.textures.exists(textureKey)) return null;
+    const frameCount = Math.max(0, this.textures.get(textureKey).frameTotal - 1);
+    const key = `${textureKey}-all`;
     if (!this.anims.exists(key)) {
       this.anims.create({
         key,
-        frames: this.anims.generateFrameNumbers('preview', { start: 0, end: frameCount - 1 }),
+        frames: this.anims.generateFrameNumbers(textureKey, { start: 0, end: frameCount - 1 }),
         frameRate: 8,
         repeat: -1,
       });
@@ -425,6 +430,7 @@ export class ViewerScene extends Phaser.Scene {
     const largeSprite = this.add.sprite(300, 250, key);
     largeSprite.setScale(4);
     this.currentSprite = largeSprite;
+    this.currentTextureKey = key;
 
     // Small game-scale preview
     const smallSprite = this.add.sprite(520, 520, key);
@@ -490,5 +496,6 @@ export class ViewerScene extends Phaser.Scene {
     }
 
     this.currentMeta = null;
+    this.currentTextureKey = null;
   }
 }

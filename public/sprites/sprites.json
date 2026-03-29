@@ -4,8 +4,27 @@
     "frameWidth": 32,
     "frameHeight": 32,
     "animations": {
-      "idle": { "frames": [0, 3] },
-      "bounce": { "frames": [56, 62] }
+      "idle": {
+        "frames": [
+          0,
+          3
+        ],
+        "frameRate": 8
+      },
+      "bounce-up": {
+        "frames": [
+          56,
+          62
+        ],
+        "frameRate": 8
+      },
+      "walkRight": {
+        "frames": [
+          28,
+          34
+        ],
+        "frameRate": 8
+      }
     }
   }
 }
