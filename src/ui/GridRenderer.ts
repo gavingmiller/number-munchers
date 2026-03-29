@@ -18,7 +18,6 @@ export class GridRenderer {
   private cellBgs: Phaser.GameObjects.Rectangle[][] = [];
   private cellTexts: Phaser.GameObjects.Text[][] = [];
   private playerContainer!: Phaser.GameObjects.Container;
-  private playerSprite: Phaser.GameObjects.Sprite | null = null;
   private playerAnimController: AnimationController | null = null;
   private troggleData: Map<string, { container: Phaser.GameObjects.Container; sprite: Phaser.GameObjects.Sprite | null }> = new Map();
 
@@ -174,7 +173,6 @@ export class GridRenderer {
       const sprite = this.scene.add.sprite(0, 0, this.character);
       sprite.setDisplaySize(4 * 12, 4 * 12);
       container.add(sprite);
-      this.playerSprite = sprite;
       this.playerAnimController = new AnimationController(sprite);
       const idleKey = animKey(this.character, 'idle');
       if (this.scene.anims.exists(idleKey)) {
@@ -183,7 +181,6 @@ export class GridRenderer {
     } else {
       // Programmatic fallback
       drawCharacter(this.scene, container, this.character, 4);
-      this.playerSprite = null;
       this.playerAnimController = null;
     }
 

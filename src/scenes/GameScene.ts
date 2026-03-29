@@ -133,6 +133,8 @@ export class GameScene extends Phaser.Scene {
       if (dir) {
         this.handleMove(dir);
         this.moveTimer = 0;
+      } else {
+        this.gridRenderer.playIdle();   // return to idle when not moving
       }
     }
 
@@ -173,6 +175,7 @@ export class GameScene extends Phaser.Scene {
   private handleMove(dir: Direction): void {
     if (this.state.status !== 'playing') return;
     this.state = applyMove(this.state, dir);
+    this.gridRenderer.playWalk(dir);    // trigger walk animation
     this.gridRenderer.update(this.state);
     this.hud.update(this.state);
     this.debugOverlay.update(this.state);
@@ -200,6 +203,7 @@ export class GameScene extends Phaser.Scene {
         FLASH_CORRECT_MS,
       );
       this.gridRenderer.update(this.state);
+      this.gridRenderer.playMunch();      // trigger munch animation
       this.hud.update(this.state);
 
       // Check level complete
