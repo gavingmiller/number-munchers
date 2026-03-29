@@ -393,7 +393,7 @@ export class ViewerScene extends Phaser.Scene {
   update(): void {
     // Update frame counter display
     if (this.currentSprite?.anims.currentAnim) {
-      const current = (this.currentSprite.anims.currentFrame?.index ?? 0) + 1;
+      const current = this.currentSprite.anims.currentFrame?.index ?? 1;
       const total = this.currentSprite.anims.getTotalFrames();
       const el = document.getElementById('frame-counter');
       if (el) {

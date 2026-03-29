@@ -11,17 +11,17 @@
         ],
         "frameRate": 8
       },
-      "bounce-up": {
-        "frames": [
-          56,
-          62
-        ],
-        "frameRate": 8
-      },
       "walkRight": {
         "frames": [
           28,
-          34
+          33
+        ],
+        "frameRate": 8
+      },
+      "walkUp": {
+        "frames": [
+          56,
+          62
         ],
         "frameRate": 8
       }
