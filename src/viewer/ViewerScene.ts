@@ -263,6 +263,30 @@ export class ViewerScene extends Phaser.Scene {
   }
 
   /**
+   * Return animation names available for the current sprite (from manifest).
+   */
+  getAnimationNames(): string[] {
+    if (!this.currentName) return [];
+    const entry = getEntry(this.currentName);
+    if (!entry) return [];
+    return Object.keys(entry.animations);
+  }
+
+  /**
+   * Switch to a specific animation by name (e.g., "idle", "bounce", "walkUp").
+   */
+  playAnimation(animName: string): void {
+    if (!this.currentSprite || !this.currentName) return;
+    const key = `${this.currentName}-${animName}`;
+    if (!this.anims.exists(key)) return;
+    this.currentAnimKey = key;
+    this.currentSprite.play({ key, repeat: -1 }, true);
+    if (this.smallSprite) {
+      this.smallSprite.play({ key, repeat: -1 }, true);
+    }
+  }
+
+  /**
    * Play the current preview sprite animation. If no animation has been
    * created yet, creates a default 'preview-all' covering all frames.
    */

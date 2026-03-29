@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
 import type { TroggleType } from '../types';
 import { TROGGLE_COLORS } from '../constants';
+import { animKey } from '../sprites/SpriteRegistry';
 
 /**
  * Draw a troggle sprite into a container at the given pixel scale.
- * Each troggle type gets its own pixel art; unimplemented types
- * fall back to a colored rectangle placeholder.
+ * If a PNG sprite sheet is loaded for this troggle type, renders from that.
+ * Otherwise falls back to programmatic pixel art.
  */
 export function drawTroggle(
   scene: Phaser.Scene,
@@ -13,6 +14,19 @@ export function drawTroggle(
   type: TroggleType,
   P: number,
 ): void {
+  // PNG branch: render from sprite sheet if texture exists
+  if (scene.textures.exists(type)) {
+    const sprite = scene.add.sprite(0, 0, type);
+    sprite.setDisplaySize(P * 12, P * 12);
+    container.add(sprite);
+    // Play idle animation if it exists
+    const idleKey = animKey(type, 'idle');
+    if (scene.anims.exists(idleKey)) {
+      sprite.play(idleKey);
+    }
+    return;
+  }
+
   switch (type) {
     case 'reggie':
       drawReggie(scene, container, P);

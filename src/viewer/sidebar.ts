@@ -157,6 +157,29 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
         </div>
       `)
       .join('');
+
+    // Animation state buttons
+    const animList = document.getElementById('animation-list');
+    if (animList) {
+      const animNames = getScene().getAnimationNames();
+      if (animNames.length > 0) {
+        animList.innerHTML = `<div class="meta-row"><span class="meta-label">Animations</span></div>` +
+          animNames.map((animName) => `
+            <button class="anim-btn" data-anim="${animName}">${animName}</button>
+          `).join('');
+        animList.querySelectorAll('.anim-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const animName = (btn as HTMLElement).dataset.anim!;
+            getScene().playAnimation(animName);
+            // Highlight active
+            animList.querySelectorAll('.anim-btn').forEach((b) => b.classList.remove('active'));
+            btn.classList.add('active');
+          });
+        });
+      } else {
+        animList.innerHTML = '';
+      }
+    }
   }
 
   function selectSprite(el: HTMLElement, name: string, type: 'character' | 'troggle'): void {

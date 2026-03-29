@@ -257,6 +257,27 @@
         color: #e07070;
       }
 
+      .anim-btn {
+        background: #2a4a6f;
+        border: none;
+        color: #e0e0e0;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin: 2px 4px 2px 0;
+        transition: background-color 0.1s;
+      }
+
+      .anim-btn:hover {
+        background: #3a5a8f;
+      }
+
+      .anim-btn.active {
+        background: #2d6a4f;
+        color: #52b788;
+      }
+
       #canvas-container {
         flex: 1;
         background-color: #1a1a2e;
@@ -286,6 +307,7 @@
         <div class="meta-title">Metadata</div>
         <div id="metadata-content" style="color: #555; font-size: 12px;">No sprite selected</div>
       </div>
+      <div id="animation-list" style="padding: 8px 12px;"></div>
       <div id="controls">
         <!-- File loading section -->
         <div class="controls-section">
