@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { SpriteManifest } from '../sprites/SpriteRegistry';
 import { ViewerScene } from './ViewerScene';
 import { initSidebar } from './sidebar';
+import { wireControls } from './ViewerBridge';
 
 let _manifest: SpriteManifest = {};
 
@@ -31,9 +32,10 @@ async function init(): Promise<void> {
 
   const game = new Phaser.Game(config);
 
-  // Wait for game ready before wiring sidebar (scene needs to be created first)
+  // Wait for game ready before wiring sidebar and controls (scene needs to be created first)
   game.events.once('ready', () => {
     initSidebar(game, _manifest);
+    wireControls(game);
   });
 }
 

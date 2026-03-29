@@ -217,6 +217,135 @@ export class ViewerScene extends Phaser.Scene {
     return this.definedRanges;
   }
 
+  /**
+   * Play the current preview sprite animation. If no animation has been
+   * created yet, creates a default 'preview-all' covering all frames.
+   */
+  play(): void {
+    if (!this.currentSprite) return;
+    const key = this.currentAnimKey ?? this._ensureDefaultAnim();
+    if (!key) return;
+    this.currentSprite.play({ key, repeat: -1 }, true);
+    if (this.smallSprite) {
+      this.smallSprite.play({ key, repeat: -1 }, true);
+    }
+  }
+
+  /**
+   * Pause animation on both preview sprites.
+   */
+  pause(): void {
+    if (this.currentSprite) {
+      this.currentSprite.anims.pause();
+    }
+    if (this.smallSprite) {
+      this.smallSprite.anims.pause();
+    }
+  }
+
+  /**
+   * Advance one frame forward (pauses first).
+   */
+  stepForward(): void {
+    this.pause();
+    if (this.currentSprite) {
+      this.currentSprite.anims.nextFrame();
+    }
+    if (this.smallSprite) {
+      this.smallSprite.anims.nextFrame();
+    }
+  }
+
+  /**
+   * Retreat one frame backward (pauses first).
+   */
+  stepBackward(): void {
+    this.pause();
+    if (this.currentSprite) {
+      this.currentSprite.anims.previousFrame();
+    }
+    if (this.smallSprite) {
+      this.smallSprite.anims.previousFrame();
+    }
+  }
+
+  /**
+   * Set playback speed in frames per second.
+   */
+  setSpeed(fps: number): void {
+    const msPerFrame = 1000 / fps;
+    if (this.currentSprite) {
+      this.currentSprite.anims.msPerFrame = msPerFrame;
+    }
+    if (this.smallSprite) {
+      this.smallSprite.anims.msPerFrame = msPerFrame;
+    }
+  }
+
+  /**
+   * Create a named animation range from start to end frame at the given fps.
+   * Stores the range in definedRanges for later commit.
+   * Plays the new animation immediately on both sprites.
+   */
+  createNamedRange(name: string, start: number, end: number, fps: number): void {
+    const animKey = `preview-${name}`;
+    if (this.anims.exists(animKey)) {
+      this.anims.remove(animKey);
+    }
+    this.anims.create({
+      key: animKey,
+      frames: this.anims.generateFrameNumbers('preview', { start, end }),
+      frameRate: fps,
+      repeat: -1,
+    });
+
+    // Store for commit
+    const existing = this.definedRanges.findIndex((r) => r.name === name);
+    const range: DefinedRange = { name, start, end, fps };
+    if (existing >= 0) {
+      this.definedRanges[existing] = range;
+    } else {
+      this.definedRanges.push(range);
+    }
+
+    this.currentAnimKey = animKey;
+    if (this.currentSprite) {
+      this.currentSprite.play({ key: animKey, repeat: -1 }, true);
+    }
+    if (this.smallSprite) {
+      this.smallSprite.play({ key: animKey, repeat: -1 }, true);
+    }
+  }
+
+  update(): void {
+    // Update frame counter display
+    if (this.currentSprite?.anims.currentAnim) {
+      const current = (this.currentSprite.anims.currentFrame?.index ?? 0) + 1;
+      const total = this.currentSprite.anims.getTotalFrames();
+      const el = document.getElementById('frame-counter');
+      if (el) {
+        el.textContent = `${current} / ${total}`;
+      }
+    }
+  }
+
+  /** Ensure a default 'preview-all' animation exists; returns its key or null. */
+  private _ensureDefaultAnim(): string | null {
+    if (!this.textures.exists('preview')) return null;
+    const frameCount = Math.max(0, this.textures.get('preview').frameTotal - 1);
+    const key = 'preview-all';
+    if (!this.anims.exists(key)) {
+      this.anims.create({
+        key,
+        frames: this.anims.generateFrameNumbers('preview', { start: 0, end: frameCount - 1 }),
+        frameRate: 8,
+        repeat: -1,
+      });
+    }
+    this.currentAnimKey = key;
+    return key;
+  }
+
   private onPreviewLoaded(key: string, frameWidth: number, frameHeight: number, fileName: string): void {
     this._clearPreviews();
 
