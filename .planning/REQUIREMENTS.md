@@ -11,9 +11,9 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 
 - [x] **VIEW-01**: Developer can open sprite viewer as a separate page
 - [x] **VIEW-02**: Viewer displays all current game characters and troggles
-- [ ] **VIEW-03**: Developer can load PNG sprite sheets from local directories
-- [ ] **VIEW-04**: Developer can preview animation frames with play/pause/step controls
-- [ ] **VIEW-05**: Developer can adjust animation speed and frame range
+- [x] **VIEW-03**: Developer can load PNG sprite sheets from local directories
+- [x] **VIEW-04**: Developer can preview animation frames with play/pause/step controls
+- [x] **VIEW-05**: Developer can adjust animation speed and frame range
 - [x] **VIEW-06**: Viewer shows sprite metadata (frame count, dimensions, name)
 
 ### Sprite System
@@ -72,9 +72,9 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 | SPRT-05 | Phase 6 | Complete |
 | VIEW-01 | Phase 7 | Complete |
 | VIEW-02 | Phase 7 | Complete |
-| VIEW-03 | Phase 7 | Pending |
-| VIEW-04 | Phase 7 | Pending |
-| VIEW-05 | Phase 7 | Pending |
+| VIEW-03 | Phase 7 | Complete |
+| VIEW-04 | Phase 7 | Complete |
+| VIEW-05 | Phase 7 | Complete |
 | VIEW-06 | Phase 7 | Complete |
 | ANIM-01 | Phase 8 | Pending |
 | ANIM-02 | Phase 8 | Pending |

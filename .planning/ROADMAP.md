@@ -25,7 +25,7 @@ Phases 1-5 completed informally before GSD adoption. See MILESTONES.md for detai
 **Milestone Goal:** Build a dev tool for viewing and animating PNG sprite sheets, and refactor the game's sprite system to support image-based characters alongside programmatic ones.
 
 - [x] **Phase 6: Sprite System Foundation** - Manifest-driven PNG sprite loading with programmatic fallback (completed 2026-03-29)
-- [ ] **Phase 7: Sprite Viewer Dev Tool** - Standalone page for previewing sprites and animations
+- [x] **Phase 7: Sprite Viewer Dev Tool** - Standalone page for previewing sprites and animations (completed 2026-03-29)
 - [ ] **Phase 8: In-Game Animations** - Frame-based character and troggle animations during gameplay
 
 ## Phase Details
@@ -55,7 +55,7 @@ Plans:
   3. Developer can load a PNG sprite sheet from disk and see its frames displayed
   4. Developer can play, pause, and step through animation frames with adjustable speed
   5. Viewer displays metadata for each sprite (name, frame count, dimensions)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 07-01-PLAN.md — Vite multi-page config, viewer HTML shell, ViewerScene, sidebar with sprite roster and metadata
@@ -83,5 +83,5 @@ Phases execute in numeric order: 6 -> 6.1 -> 6.2 -> 7 -> 7.1 -> 8
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 6. Sprite System Foundation | 2/2 | Complete   | 2026-03-29 | - |
-| 7. Sprite Viewer Dev Tool | 1/2 | In Progress|  | - |
+| 7. Sprite Viewer Dev Tool | 2/2 | Complete   | 2026-03-29 | - |
 | 8. In-Game Animations | v2.0 | 0/? | Not started | - |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Sprite Viewer/Editor
 status: planning
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-29T14:08:44.677Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-03-29T14:18:13.910Z"
 last_activity: 2026-03-28 — Roadmap created for v2.0 milestone
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -49,6 +49,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 06-sprite-system-foundation P01 | 3 | 3 tasks | 4 files |
 | Phase 06-sprite-system-foundation P02 | 3 | 2 tasks | 3 files |
 | Phase 07-sprite-viewer-dev-tool P01 | 4 | 3 tasks | 6 files |
+| Phase 07-sprite-viewer-dev-tool P02 | 5 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 07-sprite-viewer-dev-tool]: drawTroggle correct signature is drawTroggle(scene, container, type, P) — plan had wrong arg order; used correct signature
 - [Phase 07-sprite-viewer-dev-tool]: Sidebar initialized in game.events.once('ready') to ensure ViewerScene exists before initSidebar calls getScene()
 - [Phase 07-sprite-viewer-dev-tool]: Vite MPA: rollupOptions.input with named entries main+viewer; viewer.html is dev-only and should not ship in iOS Capacitor build
+- [Phase 07-sprite-viewer-dev-tool]: Drag-and-drop zone on #canvas-container div (not canvas): Phaser intercepts pointer events on canvas element
+- [Phase 07-sprite-viewer-dev-tool]: Vite configureServer plugin for POST /api/sprite-commit: dev-only commit endpoint in-process with vite dev
+- [Phase 07-sprite-viewer-dev-tool]: fileToBase64 uses FileReader (not URL.createObjectURL): base64 string needed for JSON POST body
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T14:08:44.644Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-29T14:18:13.878Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
