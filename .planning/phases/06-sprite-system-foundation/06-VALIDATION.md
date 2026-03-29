@@ -2,8 +2,8 @@
 phase: 6
 slug: sprite-system-foundation
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-28
 ---
 
@@ -38,11 +38,11 @@ created: 2026-03-28
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| TBD | TBD | TBD | SPRT-01 | unit | `bun test specs/state/SpriteManifest.spec.ts` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SPRT-02 | integration | `bun test` + visual check | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SPRT-03 | integration | visual check (PNG renders in-game) | N/A | ⬜ pending |
-| TBD | TBD | TBD | SPRT-04 | unit | `bun test` (existing tests still pass) | ✅ | ⬜ pending |
-| TBD | TBD | TBD | SPRT-05 | unit | `bun test specs/state/SpriteManifest.spec.ts` | ❌ W0 | ⬜ pending |
+| 06-01-T1 | 06-01 | 1 | SPRT-01, SPRT-05 | unit | `bun test specs/sprites/SpriteRegistry.spec.ts` | ❌ W0 | ⬜ pending |
+| 06-01-T2 | 06-01 | 1 | SPRT-05 | filesystem | `test -f public/sprites/sprites.json` | ✅ | ⬜ pending |
+| 06-01-T3 | 06-01 | 1 | SPRT-02 | filesystem | `file public/sprites/box/sheet.png \| grep PNG` | ❌ W0 | ⬜ pending |
+| 06-02-T1 | 06-02 | 2 | SPRT-02, SPRT-03 | unit | `bun test specs/ui/CharacterSprites.spec.ts` | ❌ W0 | ⬜ pending |
+| 06-02-T2 | 06-02 | 2 | SPRT-02, SPRT-04 | integration | `npx tsc --noEmit && bun test` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,11 +50,12 @@ created: 2026-03-28
 
 ## Wave 0 Requirements
 
-- [ ] `specs/state/SpriteManifest.spec.ts` — tests for manifest loading, validation, character lookup
-- [ ] `public/sprites/box/sheet.png` — minimal test sprite sheet (solid color frames, 64x64 grid)
-- [ ] `public/sprites/sprites.json` — initial manifest with box character entry
+- [x] `specs/sprites/SpriteRegistry.spec.ts` — created by 06-01-T1 (TDD task, tests written first)
+- [x] `public/sprites/box/sheet.png` — created by 06-01-T3 (generated with @napi-rs/canvas)
+- [x] `public/sprites/sprites.json` — created by 06-01-T2 with box test entry
+- [x] `specs/ui/CharacterSprites.spec.ts` — created by 06-02-T1 (TDD task, tests written first)
 
-*Existing vitest infrastructure covers framework setup.*
+*Existing vitest infrastructure covers framework setup. All Wave 0 files are created by TDD tasks (tests-first) or dedicated asset tasks within their respective plans.*
 
 ---
 
@@ -62,18 +63,19 @@ created: 2026-03-28
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| PNG sprite renders in grid cell | SPRT-02 | Requires visual check in running game | Load game, select character with PNG sheet, verify sprite displays in grid |
-| Programmatic fallback works | SPRT-04 | Requires visual check | Select character without PNG sheet, verify programmatic sprite still renders |
+| PNG sprite renders in grid cell | SPRT-02 | Requires visual check in running game | Run dev server (`npm run dev`), select box character, verify green test sprite displays in grid cell |
+| Programmatic fallback works | SPRT-04 | Requires visual check | Select any character other than box (e.g. claude), verify programmatic sprite still renders correctly |
+| BootScene loads manifest on startup | SPRT-02 | Phaser boot lifecycle not unit-testable | Open browser devtools Network tab, verify sprites.json and box/sheet.png are fetched on load |
 
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 1s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 1s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
