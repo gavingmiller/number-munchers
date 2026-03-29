@@ -26,7 +26,7 @@ Phases 1-5 completed informally before GSD adoption. See MILESTONES.md for detai
 
 - [x] **Phase 6: Sprite System Foundation** - Manifest-driven PNG sprite loading with programmatic fallback (completed 2026-03-29)
 - [x] **Phase 7: Sprite Viewer Dev Tool** - Standalone page for previewing sprites and animations (completed 2026-03-29)
-- [ ] **Phase 8: In-Game Animations** - Frame-based character and troggle animations during gameplay
+- [x] **Phase 8: In-Game Animations** - Frame-based character and troggle animations during gameplay (completed 2026-03-29)
 
 ## Phase Details
 
@@ -70,7 +70,7 @@ Plans:
   2. A PNG-enabled character plays a directional walk animation when moving between cells
   3. A PNG-enabled character plays a munch animation when the player selects a correct answer
   4. Troggles with PNG sprites animate in a way that matches their movement behavior (e.g., fangs slithers, reggie crawls)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 08-01-PLAN.md — AnimationController class and troggleAnimName helper with TDD tests
@@ -85,4 +85,4 @@ Phases execute in numeric order: 6 -> 6.1 -> 6.2 -> 7 -> 7.1 -> 8
 |-------|-----------|----------------|--------|-----------|
 | 6. Sprite System Foundation | 2/2 | Complete   | 2026-03-29 | - |
 | 7. Sprite Viewer Dev Tool | 2/2 | Complete   | 2026-03-29 | - |
-| 8. In-Game Animations | 1/2 | In Progress|  | - |
+| 8. In-Game Animations | 2/2 | Complete   | 2026-03-29 | - |

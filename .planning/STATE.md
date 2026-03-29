@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Sprite Viewer/Editor
 status: planning
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-29T15:37:31.390Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-29T15:43:16.847Z"
 last_activity: 2026-03-28 — Roadmap created for v2.0 milestone
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07-sprite-viewer-dev-tool P01 | 4 | 3 tasks | 6 files |
 | Phase 07-sprite-viewer-dev-tool P02 | 5 | 3 tasks | 7 files |
 | Phase 08-in-game-animations P01 | 2 | 1 tasks | 2 files |
+| Phase 08-in-game-animations P02 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 08-in-game-animations]: AnimatableSprite minimal interface (no Phaser import) keeps AnimationController testable in vitest node environment
 - [Phase 08-in-game-animations]: troggleAnimName uses Record<TroggleType, string> const map for exhaustive TroggleType coverage
 - [Phase 08-in-game-animations]: Null sprite constructor enables graceful dormancy for programmatic fallback path
+- [Phase 08-in-game-animations]: playWalk called before gridRenderer.update in handleMove so animation trigger precedes position sync
+- [Phase 08-in-game-animations]: playerSprite field removed from GridRenderer — AnimationController holds sprite reference internally
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T15:37:31.354Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-29T15:43:16.812Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
