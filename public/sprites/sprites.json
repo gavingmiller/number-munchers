@@ -1,0 +1,10 @@
+{
+  "box": {
+    "sheet": "box/sheet.png",
+    "frameWidth": 64,
+    "frameHeight": 64,
+    "animations": {
+      "idle": { "frames": [0, 0] }
+    }
+  }
+}
