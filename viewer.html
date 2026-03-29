@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprite Viewer — Number Munchers Dev Tool</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: #1a1a2e;
+        color: #e0e0e0;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-size: 14px;
+        display: flex;
+        flex-direction: row;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        width: 280px;
+        min-width: 280px;
+        background-color: #16213e;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #2a3a5e;
+        overflow: hidden;
+      }
+
+      #sidebar-header {
+        padding: 16px 12px 12px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e0e0e0;
+        border-bottom: 1px solid #2a3a5e;
+        background-color: #0f3460;
+        letter-spacing: 0.5px;
+      }
+
+      #sprite-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0;
+      }
+
+      #sprite-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      #sprite-list::-webkit-scrollbar-track {
+        background: #16213e;
+      }
+
+      #sprite-list::-webkit-scrollbar-thumb {
+        background: #2a3a5e;
+        border-radius: 3px;
+      }
+
+      .section-header {
+        padding: 8px 12px 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        margin-top: 4px;
+      }
+
+      .sprite-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin: 2px 6px;
+        transition: background-color 0.1s;
+        gap: 8px;
+      }
+
+      .sprite-item:hover {
+        background-color: #1e3a5f;
+      }
+
+      .sprite-item.selected {
+        background-color: #2a4a6f;
+      }
+
+      .sprite-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #444;
+        flex-shrink: 0;
+      }
+
+      .sprite-dot.has-png {
+        background-color: #4caf50;
+      }
+
+      .sprite-name {
+        color: #e0e0e0;
+        flex: 1;
+      }
+
+      #metadata-panel {
+        padding: 12px;
+        border-top: 1px solid #2a3a5e;
+        border-bottom: 1px solid #2a3a5e;
+        background-color: #12183a;
+      }
+
+      #metadata-panel .meta-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        margin-bottom: 8px;
+      }
+
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        gap: 8px;
+      }
+
+      .meta-label {
+        color: #888;
+        font-size: 12px;
+      }
+
+      .meta-value {
+        color: #e0e0e0;
+        font-size: 12px;
+        text-align: right;
+      }
+
+      #controls {
+        padding: 12px;
+        min-height: 48px;
+        color: #555;
+        font-size: 12px;
+      }
+
+      #canvas-container {
+        flex: 1;
+        background-color: #1a1a2e;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #canvas-container canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+
+      #canvas-container.dragover {
+        border: 2px dashed #4a8eff;
+        background-color: #1a2a4e;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sidebar">
+      <div id="sidebar-header">Sprite Viewer</div>
+      <div id="sprite-list"></div>
+      <div id="metadata-panel">
+        <div class="meta-title">Metadata</div>
+        <div id="metadata-content" style="color: #555; font-size: 12px;">No sprite selected</div>
+      </div>
+      <div id="controls">
+        <!-- Animation controls populated by Plan 02 -->
+      </div>
+    </div>
+    <div id="canvas-container"></div>
+    <script type="module" src="/src/viewer/main.ts"></script>
+  </body>
+</html>
