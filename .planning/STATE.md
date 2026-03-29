@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Sprite Viewer/Editor
 status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-29T15:10:24.057Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-29T15:37:31.390Z"
 last_activity: 2026-03-28 — Roadmap created for v2.0 milestone
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 06-sprite-system-foundation P02 | 3 | 2 tasks | 3 files |
 | Phase 07-sprite-viewer-dev-tool P01 | 4 | 3 tasks | 6 files |
 | Phase 07-sprite-viewer-dev-tool P02 | 5 | 3 tasks | 7 files |
+| Phase 08-in-game-animations P01 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 07-sprite-viewer-dev-tool]: Drag-and-drop zone on #canvas-container div (not canvas): Phaser intercepts pointer events on canvas element
 - [Phase 07-sprite-viewer-dev-tool]: Vite configureServer plugin for POST /api/sprite-commit: dev-only commit endpoint in-process with vite dev
 - [Phase 07-sprite-viewer-dev-tool]: fileToBase64 uses FileReader (not URL.createObjectURL): base64 string needed for JSON POST body
+- [Phase 08-in-game-animations]: AnimatableSprite minimal interface (no Phaser import) keeps AnimationController testable in vitest node environment
+- [Phase 08-in-game-animations]: troggleAnimName uses Record<TroggleType, string> const map for exhaustive TroggleType coverage
+- [Phase 08-in-game-animations]: Null sprite constructor enables graceful dormancy for programmatic fallback path
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T15:10:24.022Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-in-game-animations/08-CONTEXT.md
+Last session: 2026-03-29T15:37:31.354Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: None

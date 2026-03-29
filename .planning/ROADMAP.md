@@ -70,7 +70,7 @@ Plans:
   2. A PNG-enabled character plays a directional walk animation when moving between cells
   3. A PNG-enabled character plays a munch animation when the player selects a correct answer
   4. Troggles with PNG sprites animate in a way that matches their movement behavior (e.g., fangs slithers, reggie crawls)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 08-01-PLAN.md — AnimationController class and troggleAnimName helper with TDD tests
@@ -85,4 +85,4 @@ Phases execute in numeric order: 6 -> 6.1 -> 6.2 -> 7 -> 7.1 -> 8
 |-------|-----------|----------------|--------|-----------|
 | 6. Sprite System Foundation | 2/2 | Complete   | 2026-03-29 | - |
 | 7. Sprite Viewer Dev Tool | 2/2 | Complete   | 2026-03-29 | - |
-| 8. In-Game Animations | v2.0 | 0/2 | Not started | - |
+| 8. In-Game Animations | 1/2 | In Progress|  | - |

@@ -26,10 +26,10 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 
 ### Animation
 
-- [ ] **ANIM-01**: Characters play idle animation when stationary
-- [ ] **ANIM-02**: Characters play directional walk animation when moving
-- [ ] **ANIM-03**: Characters play munch animation on correct answer
-- [ ] **ANIM-04**: Troggles have movement animations matching their AI behavior
+- [x] **ANIM-01**: Characters play idle animation when stationary
+- [x] **ANIM-02**: Characters play directional walk animation when moving
+- [x] **ANIM-03**: Characters play munch animation on correct answer
+- [x] **ANIM-04**: Troggles have movement animations matching their AI behavior
 
 ## Future Requirements
 
@@ -76,10 +76,10 @@ Requirements for sprite viewer/editor milestone. Each maps to roadmap phases.
 | VIEW-04 | Phase 7 | Complete |
 | VIEW-05 | Phase 7 | Complete |
 | VIEW-06 | Phase 7 | Complete |
-| ANIM-01 | Phase 8 | Pending |
-| ANIM-02 | Phase 8 | Pending |
-| ANIM-03 | Phase 8 | Pending |
-| ANIM-04 | Phase 8 | Pending |
+| ANIM-01 | Phase 8 | Complete |
+| ANIM-02 | Phase 8 | Complete |
+| ANIM-03 | Phase 8 | Complete |
+| ANIM-04 | Phase 8 | Complete |
 
 **Coverage:**
 - v2.0 requirements: 15 total
