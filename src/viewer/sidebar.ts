@@ -246,6 +246,9 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
           <label style="color:#aaa;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;">
             <input id="edit-anim-flipy" type="checkbox" ${anim.flipY ? 'checked' : ''} /> Flip Y
           </label>
+          <label style="color:#aaa;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input id="edit-anim-reverse" type="checkbox" ${anim.reverse ? 'checked' : ''} /> Reverse
+          </label>
         </div>
         <button id="btn-apply-anim" class="ctrl-btn" style="width:100%;margin-top:6px;">Apply & Preview</button>
       </div>
@@ -261,15 +264,18 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
 
         const flipX = (document.getElementById('edit-anim-flipx') as HTMLInputElement).checked;
         const flipY = (document.getElementById('edit-anim-flipy') as HTMLInputElement).checked;
+        const reverse = (document.getElementById('edit-anim-reverse') as HTMLInputElement).checked;
 
         // If renamed, delete old key and create new one
         if (newName !== animName) {
           delete entry.animations[animName];
         }
-        entry.animations[newName] = { frames: [start, end], frameRate: fps, flipX: flipX || undefined, flipY: flipY || undefined };
+        entry.animations[newName] = { frames: [start, end], frameRate: fps, flipX: flipX || undefined, flipY: flipY || undefined, reverse: reverse || undefined };
 
-        // Re-create and play the animation in the viewer
-        getScene().createNamedRange(newName, start, end, fps);
+        // Re-create and play the animation in the viewer (swap start/end if reversed)
+        const playStart = reverse ? end : start;
+        const playEnd = reverse ? start : end;
+        getScene().createNamedRange(newName, playStart, playEnd, fps);
 
         // Refresh the animation buttons to reflect the rename
         if (newName !== animName) {

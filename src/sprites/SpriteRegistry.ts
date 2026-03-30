@@ -18,6 +18,8 @@ export interface AnimationDef {
   flipX?: boolean;
   /** Mirror the sprite vertically */
   flipY?: boolean;
+  /** Play frames in reverse order */
+  reverse?: boolean;
 }
 
 export interface SpriteManifestEntry {
@@ -88,11 +90,13 @@ export function registerAnimations(scene: AnimScene, manifest: SpriteManifest): 
     for (const [animName, animDef] of Object.entries(entry.animations)) {
       const key = animKey(charName, animName);
       if (scene.anims.exists(key)) continue;
+      const start = animDef.reverse ? animDef.frames[1] : animDef.frames[0];
+      const end = animDef.reverse ? animDef.frames[0] : animDef.frames[1];
       scene.anims.create({
         key,
         frames: scene.anims.generateFrameNumbers(charName, {
-          start: animDef.frames[0],
-          end: animDef.frames[1],
+          start,
+          end,
         }),
         frameRate: animDef.frameRate ?? 8,
         repeat: animDef.repeat ?? -1,
