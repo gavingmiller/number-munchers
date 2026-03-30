@@ -239,6 +239,14 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
           <span class="ctrl-label">FPS</span>
           <input id="edit-anim-fps" class="ctrl-input" type="number" value="${anim.frameRate ?? 8}" min="1" max="60" style="width:55px" />
         </div>
+        <div class="controls-row" style="gap:12px;">
+          <label style="color:#aaa;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input id="edit-anim-flipx" type="checkbox" ${anim.flipX ? 'checked' : ''} /> Flip X
+          </label>
+          <label style="color:#aaa;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            <input id="edit-anim-flipy" type="checkbox" ${anim.flipY ? 'checked' : ''} /> Flip Y
+          </label>
+        </div>
         <button id="btn-apply-anim" class="ctrl-btn" style="width:100%;margin-top:6px;">Apply & Preview</button>
       </div>
     `;
@@ -251,11 +259,14 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
         const end = parseInt((document.getElementById('edit-anim-end') as HTMLInputElement).value) || 0;
         const fps = parseInt((document.getElementById('edit-anim-fps') as HTMLInputElement).value) || 8;
 
+        const flipX = (document.getElementById('edit-anim-flipx') as HTMLInputElement).checked;
+        const flipY = (document.getElementById('edit-anim-flipy') as HTMLInputElement).checked;
+
         // If renamed, delete old key and create new one
         if (newName !== animName) {
           delete entry.animations[animName];
         }
-        entry.animations[newName] = { frames: [start, end], frameRate: fps };
+        entry.animations[newName] = { frames: [start, end], frameRate: fps, flipX: flipX || undefined, flipY: flipY || undefined };
 
         // Re-create and play the animation in the viewer
         getScene().createNamedRange(newName, start, end, fps);

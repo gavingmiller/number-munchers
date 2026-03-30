@@ -16,6 +16,8 @@ export interface AnimationDef {
   repeat?: number;
   /** Mirror the sprite horizontally (e.g., walkLeft = walkRight flipped) */
   flipX?: boolean;
+  /** Mirror the sprite vertically */
+  flipY?: boolean;
 }
 
 export interface SpriteManifestEntry {
