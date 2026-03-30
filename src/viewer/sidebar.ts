@@ -436,4 +436,20 @@ export function initSidebar(game: Phaser.Game, manifest: SpriteManifest): void {
     const item = createSpriteItem(name, 'troggle', hasPNG);
     spriteList.appendChild(item);
   }
+
+  // Build Objects section (manifest entries that aren't characters or troggles)
+  const charSet = new Set<string>(CHARACTERS);
+  const trogSet = new Set<string>(TROGGLES);
+  const objectNames = Object.keys(manifest).filter((k) => !charSet.has(k) && !trogSet.has(k));
+  if (objectNames.length > 0) {
+    const objHeader = document.createElement('div');
+    objHeader.className = 'section-header';
+    objHeader.textContent = `Objects (${objectNames.length})`;
+    spriteList.appendChild(objHeader);
+
+    for (const name of objectNames) {
+      const item = createSpriteItem(name, 'character', true);
+      spriteList.appendChild(item);
+    }
+  }
 }

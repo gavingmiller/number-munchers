@@ -26,5 +26,16 @@
         "frameRate": 12
       }
     }
+  },
+  "coin": {
+    "sheet": "coin/sheet.png",
+    "frameWidth": 16,
+    "frameHeight": 16,
+    "animations": {
+      "spin": {
+        "frames": [0, 7],
+        "frameRate": 10
+      }
+    }
   }
 }
