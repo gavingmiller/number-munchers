@@ -82,6 +82,11 @@ export class GridRenderer {
         troggleSprite = this.scene.add.sprite(0, 0, t.type);
         troggleSprite.setDisplaySize(TROGGLE_PIXEL_SIZE * 12, TROGGLE_PIXEL_SIZE * 12);
         container.add(troggleSprite);
+        // Start idle animation immediately
+        const idleKey = animKey(t.type, 'idle');
+        if (this.scene.anims.exists(idleKey)) {
+          troggleSprite.play(idleKey);
+        }
       } else {
         // Programmatic fallback
         drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
