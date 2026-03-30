@@ -29,6 +29,7 @@ export class GridRenderer {
     prevRow: number;
     prevCol: number;
     tweening: boolean;
+    activeTween: Phaser.Tweens.Tween | null;
   }> = new Map();
 
   constructor(scene: Phaser.Scene, character: CharacterType = 'box') {
@@ -92,7 +93,7 @@ export class GridRenderer {
         drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
       }
 
-      this.troggleData.set(t.id, { container, sprite: troggleSprite, prevRow: -1, prevCol: -1, tweening: false });
+      this.troggleData.set(t.id, { container, sprite: troggleSprite, prevRow: -1, prevCol: -1, tweening: false, activeTween: null });
     }
 
     // Initial sync
@@ -250,15 +251,23 @@ export class GridRenderer {
           container.setPosition(this.cellX(t.col), this.cellY(t.row));
           data.tweening = false;
         } else if (moved) {
+          // Kill any in-progress tween before starting a new one
+          if (data.activeTween) {
+            data.activeTween.stop();
+            data.activeTween = null;
+          }
           // Smooth tween to new position
           data.tweening = true;
-          this.scene.tweens.add({
+          data.activeTween = this.scene.tweens.add({
             targets: container,
             x: this.cellX(t.col),
             y: this.cellY(t.row),
             duration: TROGGLE_MOVE_DURATION,
             ease: 'Linear',
-            onComplete: () => { data.tweening = false; },
+            onComplete: () => {
+              data.tweening = false;
+              data.activeTween = null;
+            },
           });
         }
 
