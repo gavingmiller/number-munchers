@@ -72,16 +72,18 @@ export class GridRenderer {
     // Pre-create troggle containers (hidden until activated)
     for (const t of state.troggles) {
       const container = this.scene.add.container(0, 0);
-      drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
       container.setDepth(4);
       container.setVisible(false);
 
-      // PNG branch for troggle
       let troggleSprite: Phaser.GameObjects.Sprite | null = null;
       if (this.scene.textures.exists(t.type)) {
+        // PNG path: create sprite directly, skip programmatic drawing
         troggleSprite = this.scene.add.sprite(0, 0, t.type);
         troggleSprite.setDisplaySize(TROGGLE_PIXEL_SIZE * 12, TROGGLE_PIXEL_SIZE * 12);
         container.add(troggleSprite);
+      } else {
+        // Programmatic fallback
+        drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
       }
 
       this.troggleData.set(t.id, { container, sprite: troggleSprite, prevRow: -1, prevCol: -1 });
@@ -262,16 +264,17 @@ export class GridRenderer {
                 sprite.play(dirKey);
               }
             }
-          } else if (justEntered) {
-            // Play idle on entry
+          } else {
+            // Not moving — play idle (entry or stationary)
             const idleKey = animKey(t.type, 'idle');
             if (this.scene.anims.exists(idleKey)) {
               sprite.flipX = false;
               sprite.flipY = false;
-              sprite.play(idleKey);
+              if (sprite.anims.currentAnim?.key !== idleKey) {
+                sprite.play(idleKey);
+              }
             }
           }
-          // If not moved and not just entered, keep current animation
         }
 
         data.prevRow = t.row;
