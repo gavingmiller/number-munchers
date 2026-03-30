@@ -183,9 +183,13 @@ export class DebugScene extends Phaser.Scene {
     TROGGLE_SPECS.forEach((spec, i) => {
       const y = legendY + 26 + i * rowH;
 
-      // Troggle sprite (idle) — P=3 so PNG sprites (32x32) aren't too tiny
+      // Troggle sprite (idle)
       const container = this.add.container(28, y + rowH / 2 - 4);
-      drawTroggle(this, container, spec.type, 4);
+      drawTroggle(this, container, spec.type, 2);
+      // Scale up PNG sprites which render too small at P=2
+      if (this.textures.exists(spec.type)) {
+        container.setScale(2);
+      }
 
       // Type name
       this.add.text(56, y + 4, spec.type, {
