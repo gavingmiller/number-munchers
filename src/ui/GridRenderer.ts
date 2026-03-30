@@ -137,10 +137,15 @@ export class GridRenderer {
     // Hide text under player
     this.cellTexts[state.player.row]?.[state.player.col]?.setVisible(false);
 
-    // Hide text under active troggles
+    // Hide text under active troggles based on visual position (not state position)
     for (const t of state.troggles) {
-      if (t.row >= 0 && t.row < ROWS && t.col >= 0 && t.col < COLS) {
-        this.cellTexts[t.row]?.[t.col]?.setVisible(false);
+      const data = this.troggleData.get(t.id);
+      if (!data || !data.container.visible) continue;
+      // Determine which cell the troggle container is visually closest to
+      const visualCol = Math.round((data.container.x - CELL_W / 2) / CELL_W);
+      const visualRow = Math.round((data.container.y - GRID_Y - CELL_H / 2) / CELL_H);
+      if (visualRow >= 0 && visualRow < ROWS && visualCol >= 0 && visualCol < COLS) {
+        this.cellTexts[visualRow]?.[visualCol]?.setVisible(false);
       }
     }
   }
