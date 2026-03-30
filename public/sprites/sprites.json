@@ -10,20 +10,20 @@
       },
       "walkRight": {
         "frames": [28, 33],
-        "frameRate": 8
+        "frameRate": 12
       },
       "walkLeft": {
         "frames": [28, 33],
-        "frameRate": 8,
+        "frameRate": 12,
         "flipX": true
       },
       "walkDown": {
         "frames": [21, 26],
-        "frameRate": 8
+        "frameRate": 12
       },
       "walkUp": {
-        "frames": [56, 62],
-        "frameRate": 8
+        "frames": [56, 61],
+        "frameRate": 12
       }
     }
   }

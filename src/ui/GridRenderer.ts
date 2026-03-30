@@ -12,7 +12,7 @@ import { AnimationController } from './AnimationController';
 import { animKey, getAnimDef } from '../sprites/SpriteRegistry';
 
 const TROGGLE_PIXEL_SIZE = 6;
-const TROGGLE_MOVE_DURATION = 100; // ms — matches game tick rate
+const TROGGLE_MOVE_DURATION = 500; // ms — one full walk cycle per cell move
 
 export class GridRenderer {
   private scene: Phaser.Scene;
