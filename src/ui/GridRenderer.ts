@@ -4,13 +4,15 @@ import { ROWS, COLS, cellIndex } from '../types';
 import {
   GRID_Y, CELL_W, CELL_H,
   COLOR_CELL, COLOR_CELL_BORDER, COLOR_CELL_TEXT,
+  PLAYER_MOVE_MS,
 } from '../constants';
 import { drawCharacter } from './CharacterSprites';
 import { drawTroggle } from './TroggleSprites';
-import { AnimationController, troggleAnimName } from './AnimationController';
+import { AnimationController } from './AnimationController';
 import { animKey, getAnimDef } from '../sprites/SpriteRegistry';
 
 const TROGGLE_PIXEL_SIZE = 6;
+const TROGGLE_MOVE_DURATION = 100; // ms — matches game tick rate
 
 export class GridRenderer {
   private scene: Phaser.Scene;
@@ -19,7 +21,14 @@ export class GridRenderer {
   private cellTexts: Phaser.GameObjects.Text[][] = [];
   private playerContainer!: Phaser.GameObjects.Container;
   private playerAnimController: AnimationController | null = null;
-  private troggleData: Map<string, { container: Phaser.GameObjects.Container; sprite: Phaser.GameObjects.Sprite | null }> = new Map();
+  private playerPrevRow = -1;
+  private playerPrevCol = -1;
+  private troggleData: Map<string, {
+    container: Phaser.GameObjects.Container;
+    sprite: Phaser.GameObjects.Sprite | null;
+    prevRow: number;
+    prevCol: number;
+  }> = new Map();
 
   constructor(scene: Phaser.Scene, character: CharacterType = 'box') {
     this.scene = scene;
@@ -57,6 +66,8 @@ export class GridRenderer {
     const py = this.cellY(state.player.row);
     this.playerContainer = this.createPlayerSprite(px, py);
     this.playerContainer.setDepth(5);
+    this.playerPrevRow = state.player.row;
+    this.playerPrevCol = state.player.col;
 
     // Pre-create troggle containers (hidden until activated)
     for (const t of state.troggles) {
@@ -73,7 +84,7 @@ export class GridRenderer {
         container.add(troggleSprite);
       }
 
-      this.troggleData.set(t.id, { container, sprite: troggleSprite });
+      this.troggleData.set(t.id, { container, sprite: troggleSprite, prevRow: -1, prevCol: -1 });
     }
 
     // Initial sync
@@ -91,11 +102,20 @@ export class GridRenderer {
       }
     }
 
-    // Update player position
-    this.playerContainer.setPosition(
-      this.cellX(state.player.col),
-      this.cellY(state.player.row),
-    );
+    // Update player position with tween
+    const newRow = state.player.row;
+    const newCol = state.player.col;
+    if (newRow !== this.playerPrevRow || newCol !== this.playerPrevCol) {
+      this.scene.tweens.add({
+        targets: this.playerContainer,
+        x: this.cellX(newCol),
+        y: this.cellY(newRow),
+        duration: PLAYER_MOVE_MS,
+        ease: 'Linear',
+      });
+      this.playerPrevRow = newRow;
+      this.playerPrevCol = newCol;
+    }
 
     // Return to idle when stationary (no active walk/munch)
     if (this.playerAnimController) {
@@ -198,19 +218,64 @@ export class GridRenderer {
 
       if (t.row === -1) {
         container.setVisible(false);
+        data.prevRow = -1;
+        data.prevCol = -1;
       } else {
-        container.setVisible(true);
-        container.setPosition(this.cellX(t.col), this.cellY(t.row));
+        const justEntered = data.prevRow === -1;
+        const moved = !justEntered && (t.row !== data.prevRow || t.col !== data.prevCol);
 
-        // Play troggle movement animation if sprite exists
+        container.setVisible(true);
+
+        if (justEntered) {
+          // Snap to position on entry
+          container.setPosition(this.cellX(t.col), this.cellY(t.row));
+        } else if (moved) {
+          // Smooth tween to new position
+          this.scene.tweens.add({
+            targets: container,
+            x: this.cellX(t.col),
+            y: this.cellY(t.row),
+            duration: TROGGLE_MOVE_DURATION,
+            ease: 'Linear',
+          });
+        }
+
+        // Play directional animation if sprite exists
         if (sprite) {
-          const moveAnim = animKey(t.type, troggleAnimName(t.type));
-          if (this.scene.anims.exists(moveAnim)) {
-            if (sprite.anims.currentAnim?.key !== moveAnim) {
-              sprite.play(moveAnim);
+          if (moved) {
+            // Determine direction from position delta
+            const dr = t.row - data.prevRow;
+            const dc = t.col - data.prevCol;
+            let dirAnimName = 'idle';
+            if (Math.abs(dc) >= Math.abs(dr)) {
+              dirAnimName = dc > 0 ? 'walkRight' : 'walkLeft';
+            } else {
+              dirAnimName = dr > 0 ? 'walkDown' : 'walkUp';
+            }
+
+            const dirKey = animKey(t.type, dirAnimName);
+            if (this.scene.anims.exists(dirKey)) {
+              const animDef = getAnimDef(t.type, dirAnimName);
+              sprite.flipX = animDef?.flipX ?? false;
+              sprite.flipY = animDef?.flipY ?? false;
+              if (sprite.anims.currentAnim?.key !== dirKey) {
+                sprite.play(dirKey);
+              }
+            }
+          } else if (justEntered) {
+            // Play idle on entry
+            const idleKey = animKey(t.type, 'idle');
+            if (this.scene.anims.exists(idleKey)) {
+              sprite.flipX = false;
+              sprite.flipY = false;
+              sprite.play(idleKey);
             }
           }
+          // If not moved and not just entered, keep current animation
         }
+
+        data.prevRow = t.row;
+        data.prevCol = t.col;
       }
     }
   }
