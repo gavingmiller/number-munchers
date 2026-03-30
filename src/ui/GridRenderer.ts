@@ -141,14 +141,14 @@ export class GridRenderer {
     for (const t of state.troggles) {
       const data = this.troggleData.get(t.id);
       if (!data || !data.container.visible) continue;
-      // Only hide when troggle is directly on the cell center
+      // Only hide when troggle is within 75% overlap of cell center
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const cx = this.cellX(c);
           const cy = this.cellY(r);
           const dx = Math.abs(data.container.x - cx);
           const dy = Math.abs(data.container.y - cy);
-          if (dx < 2 && dy < 2) {
+          if (dx < CELL_W * 0.25 && dy < CELL_H * 0.25) {
             this.cellTexts[r]?.[c]?.setVisible(false);
           }
         }
