@@ -7,6 +7,7 @@ import { GridRenderer } from '../ui/GridRenderer';
 import { HUD } from '../ui/HUD';
 import { RuleBanner } from '../ui/RuleBanner';
 import { DebugOverlay } from '../ui/DebugOverlay';
+import { drawTroggle } from '../ui/TroggleSprites';
 import { CANVAS_WIDTH, GRID_Y, GRID_H, HUD_Y, HUD_H, TROGGLE_COLORS, PLAYER_MOVE_MS } from '../constants';
 
 // Match production speed (100ms per tick)
@@ -48,20 +49,29 @@ export class DebugScene extends Phaser.Scene {
     const baseInterval = base.troggles[0]?.moveInterval ?? 10;
     const boneheadInterval = Math.max(1, Math.floor(baseInterval * 0.5));
 
-    // Replace troggles: one of every type, low tick entry thresholds (20/40/60/80/100),
-    // playerMovesUntilEntry=9999 so they only enter via ticks (not player moves)
+    // Replace troggles: one of every type, all start on-screen immediately
+    // Spread across the grid so they're all visible from the start
+    const startPositions = [
+      { row: 0, col: 0 }, // reggie top-left
+      { row: 0, col: 4 }, // fangs top-right
+      { row: 5, col: 0 }, // squirt bottom-left
+      { row: 5, col: 4 }, // ember bottom-right
+      { row: 3, col: 2 }, // bonehead center
+    ];
     this.state = {
       ...base,
-      troggles: TROGGLE_SPECS.map((spec, i) =>
-        createTroggle(
+      troggles: TROGGLE_SPECS.map((spec, i) => {
+        const pos = startPositions[i] ?? { row: 0, col: 0 };
+        const t = createTroggle(
           `debug-${spec.type}`,
           spec.type,
-          -1, -1,
+          pos.row, pos.col,
           spec.type === 'bonehead' ? boneheadInterval : baseInterval,
-          9999,        // playerMovesUntilEntry: ignore in debug
-          20 + i * 20, // ticksUntilEntry: 20, 40, 60, 80, 100
-        )
-      ),
+          -1, // already active
+          -1, // already active
+        );
+        return { ...t, playerMovesUntilEntry: -1, ticksUntilEntry: -1 };
+      }),
     };
 
     // Real UI stack — identical to GameScene
@@ -172,14 +182,13 @@ export class DebugScene extends Phaser.Scene {
 
     TROGGLE_SPECS.forEach((spec, i) => {
       const y = legendY + 26 + i * rowH;
-      const color = TROGGLE_COLORS[spec.type] ?? 0xffffff;
 
-      // Color swatch
-      this.add.rectangle(28, y + rowH / 2 - 4, 20, 20, color, 0.9)
-        .setStrokeStyle(1, color);
+      // Troggle sprite (idle)
+      const container = this.add.container(28, y + rowH / 2 - 4);
+      drawTroggle(this, container, spec.type, 2);
 
       // Type name
-      this.add.text(48, y + 4, spec.type, {
+      this.add.text(56, y + 4, spec.type, {
         fontSize: '15px',
         fontFamily: 'monospace',
         color: '#ffffff',
@@ -187,7 +196,7 @@ export class DebugScene extends Phaser.Scene {
       });
 
       // Behavior description
-      this.add.text(48, y + 24, spec.desc, {
+      this.add.text(56, y + 24, spec.desc, {
         fontSize: '12px',
         fontFamily: 'monospace',
         color: '#aaaaaa',
