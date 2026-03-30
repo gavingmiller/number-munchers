@@ -183,9 +183,9 @@ export class DebugScene extends Phaser.Scene {
     TROGGLE_SPECS.forEach((spec, i) => {
       const y = legendY + 26 + i * rowH;
 
-      // Troggle sprite (idle)
+      // Troggle sprite (idle) — P=3 so PNG sprites (32x32) aren't too tiny
       const container = this.add.container(28, y + rowH / 2 - 4);
-      drawTroggle(this, container, spec.type, 2);
+      drawTroggle(this, container, spec.type, 3);
 
       // Type name
       this.add.text(56, y + 4, spec.type, {
