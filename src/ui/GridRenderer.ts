@@ -137,15 +137,21 @@ export class GridRenderer {
     // Hide text under player
     this.cellTexts[state.player.row]?.[state.player.col]?.setVisible(false);
 
-    // Hide text under active troggles based on visual position (not state position)
+    // Hide text under active troggles based on visual overlap (tight threshold)
     for (const t of state.troggles) {
       const data = this.troggleData.get(t.id);
       if (!data || !data.container.visible) continue;
-      // Determine which cell the troggle container is visually closest to
-      const visualCol = Math.round((data.container.x - CELL_W / 2) / CELL_W);
-      const visualRow = Math.round((data.container.y - GRID_Y - CELL_H / 2) / CELL_H);
-      if (visualRow >= 0 && visualRow < ROWS && visualCol >= 0 && visualCol < COLS) {
-        this.cellTexts[visualRow]?.[visualCol]?.setVisible(false);
+      // Only hide when troggle is within 25% of a cell center
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cx = this.cellX(c);
+          const cy = this.cellY(r);
+          const dx = Math.abs(data.container.x - cx);
+          const dy = Math.abs(data.container.y - cy);
+          if (dx < CELL_W * 0.25 && dy < CELL_H * 0.25) {
+            this.cellTexts[r]?.[c]?.setVisible(false);
+          }
+        }
       }
     }
   }
