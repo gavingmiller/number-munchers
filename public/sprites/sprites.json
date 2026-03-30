@@ -5,40 +5,45 @@
     "frameHeight": 32,
     "animations": {
       "idle": {
-        "frames": [
-          0,
-          3
-        ],
+        "frames": [0, 3],
         "frameRate": 8
       },
       "walkRight": {
-        "frames": [
-          28,
-          33
-        ],
+        "frames": [28, 33],
         "frameRate": 12
       },
       "walkLeft": {
-        "frames": [
-          28,
-          33
-        ],
+        "frames": [28, 33],
         "frameRate": 12,
         "flipX": true
       },
       "walkDown": {
-        "frames": [
-          21,
-          26
-        ],
+        "frames": [21, 26],
         "frameRate": 12
       },
       "walkUp": {
-        "frames": [
-          56,
-          61
-        ],
+        "frames": [56, 61],
         "frameRate": 12
+      }
+    }
+  },
+  "fangs": {
+    "sheet": "fangs/sheet.png",
+    "frameWidth": 32,
+    "frameHeight": 32,
+    "animations": {
+      "idle": {
+        "frames": [0, 3],
+        "frameRate": 8
+      },
+      "walkLeft": {
+        "frames": [0, 3],
+        "frameRate": 10
+      },
+      "walkRight": {
+        "frames": [0, 3],
+        "frameRate": 10,
+        "flipX": true
       }
     }
   },
@@ -48,10 +53,7 @@
     "frameHeight": 16,
     "animations": {
       "spin": {
-        "frames": [
-          7,
-          0
-        ],
+        "frames": [7, 0],
         "frameRate": 10
       }
     }
