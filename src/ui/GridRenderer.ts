@@ -28,6 +28,7 @@ export class GridRenderer {
     sprite: Phaser.GameObjects.Sprite | null;
     prevRow: number;
     prevCol: number;
+    tweening: boolean;
   }> = new Map();
 
   constructor(scene: Phaser.Scene, character: CharacterType = 'box') {
@@ -86,7 +87,7 @@ export class GridRenderer {
         drawTroggle(this.scene, container, t.type, TROGGLE_PIXEL_SIZE);
       }
 
-      this.troggleData.set(t.id, { container, sprite: troggleSprite, prevRow: -1, prevCol: -1 });
+      this.troggleData.set(t.id, { container, sprite: troggleSprite, prevRow: -1, prevCol: -1, tweening: false });
     }
 
     // Initial sync
@@ -231,14 +232,17 @@ export class GridRenderer {
         if (justEntered) {
           // Snap to position on entry
           container.setPosition(this.cellX(t.col), this.cellY(t.row));
+          data.tweening = false;
         } else if (moved) {
           // Smooth tween to new position
+          data.tweening = true;
           this.scene.tweens.add({
             targets: container,
             x: this.cellX(t.col),
             y: this.cellY(t.row),
             duration: TROGGLE_MOVE_DURATION,
             ease: 'Linear',
+            onComplete: () => { data.tweening = false; },
           });
         }
 
@@ -264,8 +268,8 @@ export class GridRenderer {
                 sprite.play(dirKey);
               }
             }
-          } else {
-            // Not moving — play idle (entry or stationary)
+          } else if (!data.tweening) {
+            // Only return to idle when not mid-tween
             const idleKey = animKey(t.type, 'idle');
             if (this.scene.anims.exists(idleKey)) {
               sprite.flipX = false;
